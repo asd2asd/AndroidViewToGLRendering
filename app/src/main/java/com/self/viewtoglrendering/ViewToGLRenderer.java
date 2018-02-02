@@ -19,7 +19,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = ViewToGLRenderer.class.getSimpleName();
 
-    private static final int DEFAULT_TEXTURE_WIDTH = 1080;
+    private static final int DEFAULT_TEXTURE_WIDTH = 500;
     private static final int DEFAULT_TEXTURE_HEIGHT = 1080;
 
     private SurfaceTexture mSurfaceTexture;
@@ -37,6 +37,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
         synchronized (this){
             // update texture
             mSurfaceTexture.updateTexImage();
+            Log.e("frame","frame");
         }
    }
 
@@ -49,7 +50,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
             //It's a clue class for rendering an android view to gl level
             mSurfaceTexture = new SurfaceTexture(mGlSurfaceTexture);
 //            mSurfaceTexture.setDefaultBufferSize(mTextureWidth, mTextureHeight);
-            mSurfaceTexture.setDefaultBufferSize(width, height);
+            mSurfaceTexture.setDefaultBufferSize(200, 200);
             mSurface = new Surface(mSurfaceTexture);
         }
 

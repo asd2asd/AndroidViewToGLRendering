@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 
 import com.self.viewtoglrendering.cuberenerer.CubeGLRenderer;
 
@@ -22,23 +23,49 @@ public class MainActivity extends ActionBarActivity {
         initViews();
     }
 
+//    private void initViews() {
+//        setContentView(R.layout.activity_main);
+//
+//        ViewToGLRenderer viewToGlRenderer = new CubeGLRenderer(this);
+//
+//        mGLSurfaceView = (GLSurfaceView) findViewById(R.id.gl_surface_view);
+//        mGLLinearLayout = (GLRenderable) findViewById(R.id.gl_layout);
+//        mWebView = (WebView) findViewById(R.id.web_view);
+//
+//        mGLSurfaceView.setEGLContextClientVersion(2);
+//        mGLSurfaceView.setRenderer(viewToGlRenderer);
+//
+//        mGLLinearLayout.setViewToGLRenderer(viewToGlRenderer);
+//
+//        mWebView.setWebViewClient(new WebViewClient());
+//        mWebView.setWebChromeClient(new WebChromeClient());
+//        mWebView.loadUrl("http://stackoverflow.com/");
+//    }
+
+
     private void initViews() {
-        setContentView(R.layout.activity_main);
+
+        RelativeLayout relativeLayout = new RelativeLayout(this);
+        this.setContentView(relativeLayout);
 
         ViewToGLRenderer viewToGlRenderer = new CubeGLRenderer(this);
 
-        mGLSurfaceView = (GLSurfaceView) findViewById(R.id.gl_surface_view);
-        mGLLinearLayout = (GLRenderable) findViewById(R.id.gl_layout);
-        mWebView = (WebView) findViewById(R.id.web_view);
+        mGLSurfaceView = new GLSurfaceView(this);
+        GLWebView glWebView = new GLWebView(this);
 
         mGLSurfaceView.setEGLContextClientVersion(2);
         mGLSurfaceView.setRenderer(viewToGlRenderer);
+//        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-        mGLLinearLayout.setViewToGLRenderer(viewToGlRenderer);
+        relativeLayout.addView(glWebView);
+        relativeLayout.addView(mGLSurfaceView);
 
-        mWebView.setWebViewClient(new WebViewClient());
-        mWebView.setWebChromeClient(new WebChromeClient());
-        mWebView.loadUrl("http://stackoverflow.com/");
+        glWebView.setViewToGLRenderer(viewToGlRenderer);
+        glWebView.setGlSurfaceView(mGLSurfaceView);
+
+        glWebView.setWebViewClient(new WebViewClient());
+        glWebView.setWebChromeClient(new WebChromeClient());
+        glWebView.loadUrl("https://m.smzdm.com/");
     }
 
 

@@ -2,7 +2,10 @@ package com.self.viewtoglrendering;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.opengl.GLSurfaceView;
+import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.webkit.WebView;
 
 /**
@@ -11,6 +14,7 @@ import android.webkit.WebView;
 public class GLWebView extends WebView implements GLRenderable{
 
     private ViewToGLRenderer mViewToGLRenderer;
+    private GLSurfaceView glSurfaceView;
 
     // default constructors
 
@@ -34,16 +38,24 @@ public class GLWebView extends WebView implements GLRenderable{
         if(glAttachedCanvas != null) {
             //translate canvas to reflect view scrolling
             float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
-            glAttachedCanvas.scale(xScale, xScale);
+//            glAttachedCanvas.scale(xScale, xScale);
             glAttachedCanvas.translate(-getScrollX(), -getScrollY());
             //draw the view to provided canvas
             super.draw(glAttachedCanvas);
         }
         // notify the canvas is updated
         mViewToGLRenderer.onDrawViewEnd();
+        Log.e("draw","draw");
+//        glSurfaceView.requestRender();
+//        super.draw(canvas);
     }
 
     public void setViewToGLRenderer(ViewToGLRenderer viewTOGLRenderer){
         mViewToGLRenderer = viewTOGLRenderer;
+    }
+
+    public void setGlSurfaceView(GLSurfaceView glSurfaceView)
+    {
+        this.glSurfaceView = glSurfaceView;
     }
 }
