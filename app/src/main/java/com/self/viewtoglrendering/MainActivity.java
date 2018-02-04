@@ -1,5 +1,6 @@
 package com.self.viewtoglrendering;
 
+import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -53,6 +54,9 @@ public class MainActivity extends ActionBarActivity {
         mGLSurfaceView = new GLSurfaceView(this);
         GLWebView glWebView = new GLWebView(this);
 
+        mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        mGLSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        mGLSurfaceView.setZOrderOnTop(true);
         mGLSurfaceView.setEGLContextClientVersion(2);
         mGLSurfaceView.setRenderer(viewToGlRenderer);
 //        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);

@@ -37,7 +37,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
         synchronized (this){
             // update texture
             mSurfaceTexture.updateTexImage();
-            Log.e("frame","frame");
+//            Log.e("frame","frame");
         }
    }
 
@@ -50,7 +50,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
             //It's a clue class for rendering an android view to gl level
             mSurfaceTexture = new SurfaceTexture(mGlSurfaceTexture);
 //            mSurfaceTexture.setDefaultBufferSize(mTextureWidth, mTextureHeight);
-            mSurfaceTexture.setDefaultBufferSize(200, 200);
+            mSurfaceTexture.setDefaultBufferSize(width, height);
             mSurface = new Surface(mSurfaceTexture);
         }
 
