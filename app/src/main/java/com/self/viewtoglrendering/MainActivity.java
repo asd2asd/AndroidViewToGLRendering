@@ -61,8 +61,13 @@ public class MainActivity extends ActionBarActivity {
         mGLSurfaceView.setRenderer(viewToGlRenderer);
 //        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
+        View2TextureView textureView = new View2TextureView(this);
+
         relativeLayout.addView(glWebView);
         relativeLayout.addView(mGLSurfaceView);
+        relativeLayout.addView(textureView);
+
+        glWebView.setTextureView(textureView);
 
         glWebView.setViewToGLRenderer(viewToGlRenderer);
         glWebView.setGlSurfaceView(mGLSurfaceView);
