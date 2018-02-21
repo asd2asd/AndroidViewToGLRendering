@@ -13,6 +13,8 @@ import android.webkit.WebView;
 
 import org.w3c.dom.Text;
 
+import javax.microedition.khronos.opengles.GL;
+
 /**
  * Created by user on 3/15/15.
  */
@@ -56,7 +58,7 @@ public class GLWebView extends WebView implements GLRenderable{
     // draw magic
     @Override
     public void draw( Canvas canvas ) {
-        draw2(canvas);
+        draw1(canvas);
     }
 
     private void draw2(Canvas canvas)
@@ -79,7 +81,7 @@ public class GLWebView extends WebView implements GLRenderable{
     private void draw1(Canvas canvas)
     {
         //returns canvas attached to gl texture to draw on
-        Canvas glAttachedCanvas = mViewToGLRenderer.onDrawViewBegin();
+        final Canvas glAttachedCanvas = mViewToGLRenderer.onDrawViewBegin();
         if(glAttachedCanvas != null) {
             //translate canvas to reflect view scrolling
             float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
@@ -87,7 +89,13 @@ public class GLWebView extends WebView implements GLRenderable{
             glAttachedCanvas.translate(-getScrollX(), -getScrollY());
             //draw the view to provided canvas
             long timeStart = System.currentTimeMillis();
-            super.draw(glAttachedCanvas);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    GLWebView.this.superDraw(glAttachedCanvas);
+                }
+            }).start();
             long during = System.currentTimeMillis() - timeStart;
             Log.e("draw during",during+"");
         }
@@ -95,8 +103,12 @@ public class GLWebView extends WebView implements GLRenderable{
         mViewToGLRenderer.onDrawViewEnd();
 //        Log.e("draw","draw");
 //        glSurfaceView.requestRender();
-        super.draw(canvas);
         fpsCount++;
+    }
+
+    private void superDraw(Canvas canvas)
+    {
+        super.draw(canvas);
     }
 
 

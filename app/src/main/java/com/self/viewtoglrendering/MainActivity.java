@@ -63,6 +63,7 @@ public class MainActivity extends ActionBarActivity {
 
         View2TextureView textureView = new View2TextureView(this);
 
+
         relativeLayout.addView(glWebView);
         relativeLayout.addView(mGLSurfaceView);
         relativeLayout.addView(textureView);
