@@ -50,7 +50,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
             //It's a clue class for rendering an android view to gl level
             mSurfaceTexture = new SurfaceTexture(mGlSurfaceTexture);
 //            mSurfaceTexture.setDefaultBufferSize(mTextureWidth, mTextureHeight);
-            mSurfaceTexture.setDefaultBufferSize(width, height);
+            mSurfaceTexture.setDefaultBufferSize(480, 640);
             mSurface = new Surface(mSurfaceTexture);
         }
 

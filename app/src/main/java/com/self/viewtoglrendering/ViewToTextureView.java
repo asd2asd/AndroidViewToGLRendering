@@ -68,7 +68,7 @@ public class ViewToTextureView implements TextureView.SurfaceTextureListener,Vie
 
         releaseSurface();
             mSurfaceTexture = surfaceTexture;
-            mSurfaceTexture.setDefaultBufferSize(mTextureWidth, mTextureHeight);
+            mSurfaceTexture.setDefaultBufferSize(768, 1200);
             mSurface = new Surface(mSurfaceTexture);
     }
 
