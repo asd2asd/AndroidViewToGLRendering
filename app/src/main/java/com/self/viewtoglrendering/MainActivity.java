@@ -52,6 +52,8 @@ public class MainActivity extends ActionBarActivity {
         ViewToGLRenderer viewToGlRenderer = new CubeGLRenderer(this);
 
         mGLSurfaceView = new GLSurfaceView(this);
+        mGLSurfaceView.setOnTouchListener((CubeGLRenderer)viewToGlRenderer);
+        mGLSurfaceView.setFocusable(true);
         GLWebView glWebView = new GLWebView(this);
 
         mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);

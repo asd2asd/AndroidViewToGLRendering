@@ -5,6 +5,9 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.SystemClock;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 
 import com.self.viewtoglrendering.R;
 import com.self.viewtoglrendering.ViewToGLRenderer;
@@ -19,7 +22,7 @@ import javax.microedition.khronos.opengles.GL10;
 /**
  * Created by user on 3/15/15.
  */
-public class CubeGLRenderer extends ViewToGLRenderer {
+public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchListener {
 
     /**
      * Store the model matrix. This matrix is used to move models from object space (where each model can be thought
@@ -45,10 +48,10 @@ public class CubeGLRenderer extends ViewToGLRenderer {
     private float[] mLightModelMatrix = new float[16];
 
     /** Store our model data in a float buffer. */
-    private final FloatBuffer mCubePositions;
-    private final FloatBuffer mCubeColors;
-    private final FloatBuffer mCubeNormals;
-    private final FloatBuffer mCubeTextureCoordinates;
+    private FloatBuffer mCubePositions;
+    private FloatBuffer mCubeColors;
+    private FloatBuffer mCubeNormals;
+    private FloatBuffer mCubeTextureCoordinates;
 
     /** This will be used to pass in the transformation matrix. */
     private int mMVPMatrixHandle;
@@ -109,10 +112,20 @@ public class CubeGLRenderer extends ViewToGLRenderer {
 //    private int mTextureDataHandle;
     private Context mContext;
 
+    private int touchOffsetX;
+    private int touchOffsetY;
+    private int viewWidth,viewHeight;
+
 
 
     public CubeGLRenderer(Context context) {
         mContext = context;
+
+    }
+
+    private void initModel(float ratio)
+    {
+
         final float[] cubePositionData =
                 {
                         // In OpenGL counter-clockwise winding is default. This means that when we look at a triangle,
@@ -121,12 +134,12 @@ public class CubeGLRenderer extends ViewToGLRenderer {
                         // usually represent the backside of an object and aren't visible anyways.
 
                         // Front face
-                        -1.0f, 2.0f, 1.0f,
-                        -1.0f, -2.0f, 1.0f,
-                        1.0f, 2.0f, 1.0f,
-                        -1.0f, -2.0f, 1.0f,
-                        1.0f, -2.0f, 1.0f,
-                        1.0f, 2.0f, 1.0f,
+                        -1.0f, ratio, 1.0f,
+                        -1.0f, -ratio, 1.0f,
+                        1.0f, ratio, 1.0f,
+                        -1.0f, -ratio, 1.0f,
+                        1.0f, -ratio, 1.0f,
+                        1.0f, ratio, 1.0f,
 
 //                        // Right face
 //                        1.0f, 1.0f, 1.0f,
@@ -348,7 +361,6 @@ public class CubeGLRenderer extends ViewToGLRenderer {
         mCubeTextureCoordinates = ByteBuffer.allocateDirect(cubeTextureCoordinateData.length * mBytesPerFloat)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mCubeTextureCoordinates.put(cubeTextureCoordinateData).position(0);
-
     }
 
     protected String getVertexShader()
@@ -423,6 +435,12 @@ public class CubeGLRenderer extends ViewToGLRenderer {
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         super.onSurfaceChanged(gl, width, height);
+
+        viewHeight = height;
+        viewWidth = width;
+
+        initModel((float)height/width);
+
         GLES20.glViewport(0, 0, width, height);
 
         // Create a new perspective projection matrix. The height will stay the same
@@ -434,6 +452,7 @@ public class CubeGLRenderer extends ViewToGLRenderer {
         final float top = 1.0f;
         final float near = 1.0f;
         final float far = 10.0f;
+
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
     }
@@ -493,8 +512,13 @@ public class CubeGLRenderer extends ViewToGLRenderer {
 
 
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.1f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.5f);
 //        Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 1.0f, 1.0f, 0.0f);
+        Matrix.translateM(mModelMatrix,0,
+                (float)touchOffsetX/viewWidth,
+                0.0f,0.0f);
+
+        Log.e("touch",touchOffsetX+"");
         drawCube();
 
         // Draw a point to indicate the light.
@@ -577,4 +601,20 @@ public class CubeGLRenderer extends ViewToGLRenderer {
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+        int action = event.getAction();
+        if(action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE)
+        {
+            drawOpenGl = true;
+            touchOffsetX = (int) (event.getX() - viewWidth/2);
+        }
+        else if(action == MotionEvent.ACTION_UP|| action == MotionEvent.ACTION_CANCEL)
+        {
+            drawOpenGl = false;
+            touchOffsetX = 0;
+        }
+        return true;
+    }
 }

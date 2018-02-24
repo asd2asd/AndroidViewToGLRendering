@@ -103,9 +103,13 @@ public class GLWebView extends WebView implements GLRenderable{
 //                }
 //            }).start();
             superDraw(glAttachedCanvas);
+            // notify the canvas is updated
+            mViewToGLRenderer.onDrawViewEnd();
         }
-        // notify the canvas is updated
-        mViewToGLRenderer.onDrawViewEnd();
+        else
+        {
+            superDraw(canvas);
+        }
 //        Log.e("draw","draw");
 //        glSurfaceView.requestRender();
         fpsCount++;
@@ -115,8 +119,8 @@ public class GLWebView extends WebView implements GLRenderable{
     {
 
         long timeStart = System.currentTimeMillis();
-//        super.draw(canvas);
-        super.onDraw(canvas);
+        super.draw(canvas);
+//        super.onDraw(canvas);
         long during = System.currentTimeMillis() - timeStart;
         Log.e("draw during",during+"");
 

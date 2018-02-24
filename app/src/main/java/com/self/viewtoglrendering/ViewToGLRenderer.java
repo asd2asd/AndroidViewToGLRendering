@@ -31,6 +31,8 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
     private int mTextureWidth = DEFAULT_TEXTURE_WIDTH;
     private int mTextureHeight = DEFAULT_TEXTURE_HEIGHT;
 
+    protected boolean drawOpenGl = false;
+
 
     @Override
     public void onDrawFrame(GL10 gl){
@@ -101,6 +103,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
 
 
     public Canvas onDrawViewBegin(){
+        if(!drawOpenGl) return null;
         mSurfaceCanvas = null;
         if (mSurface != null) {
             try {
