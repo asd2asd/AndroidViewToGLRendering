@@ -103,7 +103,7 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
 
 
     public Canvas onDrawViewBegin(){
-        if(!drawOpenGl) return null;
+//        if(!drawOpenGl) return null;
         mSurfaceCanvas = null;
         if (mSurface != null) {
             try {

@@ -467,24 +467,29 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
         long time = SystemClock.uptimeMillis() % 10000L;
         float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
 
-        // Set our per-vertex lighting program.
-        GLES20.glUseProgram(mProgramHandle);
+
+        for(int i=0;i<2;i++)
+
+        {
+
+            // Set our per-vertex lighting program.
+            GLES20.glUseProgram(mProgramHandle);
 
 
-        // Set program handles for cube drawing.
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
-        mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
-        mLightPosHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_LightPos");
-        mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture");
-        mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
-        mColorHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Color");
-        mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
+            // Set program handles for cube drawing.
+            mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
+            mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
+            mLightPosHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_LightPos");
+            mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture");
+            mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
+            mColorHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Color");
+            mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
+            mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
 
 
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,  getGLSurfaceTexture());
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,  getGLSurfaceTexture());
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES20.glUniform1i(mTextureUniformHandle, 0);
 
 
 //        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
@@ -498,31 +503,34 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        // Bind the texture to this unit.
 //        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, glSurfaceTex);
 
-        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+            // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
 //        GLES20.glUniform1i(mTextureUniformHandle, 0);
 
-        // Calculate position of the light. Rotate and then push into the distance.
-        Matrix.setIdentityM(mLightModelMatrix, 0);
+            // Calculate position of the light. Rotate and then push into the distance.
+            Matrix.setIdentityM(mLightModelMatrix, 0);
 //        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -4.0f);
 //        Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+            Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
 
-        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
-        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
+            Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+            Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
 
 
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.5f);
+            Matrix.setIdentityM(mModelMatrix, 0);
+            Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.5f);
 //        Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 1.0f, 1.0f, 0.0f);
-        Matrix.translateM(mModelMatrix,0,
-                (float)touchOffsetX/viewWidth,
-                0.0f,0.0f);
+            Matrix.translateM(mModelMatrix,0,
+                    (float)(touchOffsetX+ i*viewWidth)/viewWidth,
+                    0.0f,0.0f);
 
-        Log.e("touch",touchOffsetX+"");
-        drawCube();
+            Log.e("touch",touchOffsetX+"");
+            drawCube();
 
-        // Draw a point to indicate the light.
-        GLES20.glUseProgram(mPointProgramHandle);
+            // Draw a point to indicate the light.
+            GLES20.glUseProgram(mPointProgramHandle);
+        }
+
+
         drawLight();
     }
 
