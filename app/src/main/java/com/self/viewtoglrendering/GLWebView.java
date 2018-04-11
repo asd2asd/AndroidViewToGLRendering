@@ -25,7 +25,6 @@ public class GLWebView extends WebView implements GLRenderable{
     private boolean recordFps;
     private int fpsCount;
 
-    View2TextureView textureView;
 
     // default constructors
 
@@ -51,10 +50,6 @@ public class GLWebView extends WebView implements GLRenderable{
         new Thread(fpsRunnable).start();
     }
 
-    public void setTextureView(View2TextureView textureView){
-        this.textureView = textureView;
-    }
-
     // draw magic
     @Override
     public void draw( Canvas canvas ) {
@@ -68,20 +63,6 @@ public class GLWebView extends WebView implements GLRenderable{
         canvas1.clipRect(0,0,1440,2480);
         superDraw(canvas1);
 
-    }
-
-    private void draw2(Canvas canvas)
-    {
-        if(null==textureView) return;
-        Canvas c = textureView.lockCanvas();
-
-        if(c!=null)
-        {
-            c.translate(-getScrollX(), -getScrollY());
-
-            super.draw(c);
-        }
-        textureView.unlockCanvasAndPost(c);
     }
 
     private void draw1(Canvas canvas)
