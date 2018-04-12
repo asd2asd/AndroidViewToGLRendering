@@ -107,7 +107,8 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
         mSurfaceCanvas = null;
         if (mSurface != null) {
             try {
-                mSurfaceCanvas = mSurface.lockCanvas(null);
+//                mSurfaceCanvas = mSurface.lockCanvas(null);
+                mSurfaceCanvas = mSurface.lockHardwareCanvas();
             }catch (Exception e){
                 Log.e(TAG, "error while rendering view to gl: " + e);
             }

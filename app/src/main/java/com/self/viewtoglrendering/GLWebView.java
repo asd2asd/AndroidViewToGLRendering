@@ -48,7 +48,31 @@ public class GLWebView extends WebView implements GLRenderable{
         recordFps = true;
         fpsCount = 0;
         new Thread(fpsRunnable).start();
+
+        this.getSettings().setJavaScriptEnabled(true);
     }
+
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+//		if(oldt==t) Toast.makeText(mContext,"scroll stop",Toast.LENGTH_SHORT).show();
+		int scrollDistance = t - oldt;
+//		if (null != mActionListener&&mCanToolsBarScroll)
+//		{
+////			if (t==0||scrollDistance < -20)
+//			if(scrollDistance<0) {
+//				mActionListener.OnScrollUp(this, oldt, t);
+//				lastScrollUp = 1;
+//			}
+//			else if (scrollDistance > 0) {
+//				mActionListener.OnScrollDown(this, oldt, t);
+//				lastScrollUp = 2;
+//			}
+//		}
+//        this.setPadding(0,0,0,t);
+		super.onScrollChanged(l, t, oldl, oldt);
+    }
+
 
     // draw magic
     @Override
@@ -103,7 +127,7 @@ public class GLWebView extends WebView implements GLRenderable{
         super.draw(canvas);
 //        super.onDraw(canvas);
         long during = System.currentTimeMillis() - timeStart;
-//        Log.e("draw during",during+"");
+        if(during>15)Log.e("draw during",during+"");
 
     }
 

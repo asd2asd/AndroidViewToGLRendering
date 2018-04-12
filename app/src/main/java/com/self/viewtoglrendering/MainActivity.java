@@ -54,13 +54,13 @@ public class MainActivity extends ActionBarActivity {
         ViewToGLRenderer viewToGlRenderer = new MultiWindowRenderer(this);
 
         mGLSurfaceView = new GLSurfaceView(this);
-        mGLSurfaceView.setOnTouchListener((MultiWindowRenderer)viewToGlRenderer);
-        mGLSurfaceView.setFocusable(true);
+//        mGLSurfaceView.setOnTouchListener((MultiWindowRenderer)viewToGlRenderer);
+//        mGLSurfaceView.setFocusable(true);
         GLWebView glWebView = new GLWebView(this);
 
-        mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        mGLSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        mGLSurfaceView.setZOrderOnTop(true);
+//        mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+//        mGLSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+//        mGLSurfaceView.setZOrderOnTop(true);
         mGLSurfaceView.setEGLContextClientVersion(2);
         mGLSurfaceView.setRenderer(viewToGlRenderer);
 //        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -76,7 +76,7 @@ public class MainActivity extends ActionBarActivity {
 
         glWebView.setWebViewClient(new WebViewClient());
         glWebView.setWebChromeClient(new WebChromeClient());
-        glWebView.loadUrl("https://m.smzdm.com/");
+        glWebView.loadUrl("https://www.cnbeta.com/");
     }
 
 
