@@ -395,12 +395,12 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
         // Position the eye in front of the origin.
         final float eyeX = 0.0f;
         final float eyeY = 0.0f;
-        final float eyeZ = 5.0f;
+        final float eyeZ = 2.5f;
 
         // We are looking toward the distance
         final float lookX = 0.0f;
         final float lookY = 0.0f;
-        final float lookZ = -2.0f;
+        final float lookZ = 0.0f;
 
         // Set our up vector. This is where our head would be pointing were we holding the camera.
         final float upX = 0.0f;
@@ -518,7 +518,7 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 
 
             Matrix.setIdentityM(mModelMatrix, 0);
-            Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -1.5f);
+//            Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);
 //        Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 1.0f, 1.0f, 0.0f);
             Matrix.translateM(mModelMatrix,0,
                     (float)(touchOffsetX+ i*viewWidth)/viewWidth,

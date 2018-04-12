@@ -4,12 +4,14 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.MutableInt;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 
 import com.self.viewtoglrendering.cuberenerer.CubeGLRenderer;
+import com.self.viewtoglrendering.cuberenerer.MultiWindowRenderer;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -49,10 +51,10 @@ public class MainActivity extends ActionBarActivity {
         RelativeLayout relativeLayout = new RelativeLayout(this);
         this.setContentView(relativeLayout);
 
-        ViewToGLRenderer viewToGlRenderer = new CubeGLRenderer(this);
+        ViewToGLRenderer viewToGlRenderer = new MultiWindowRenderer(this);
 
         mGLSurfaceView = new GLSurfaceView(this);
-        mGLSurfaceView.setOnTouchListener((CubeGLRenderer)viewToGlRenderer);
+        mGLSurfaceView.setOnTouchListener((MultiWindowRenderer)viewToGlRenderer);
         mGLSurfaceView.setFocusable(true);
         GLWebView glWebView = new GLWebView(this);
 

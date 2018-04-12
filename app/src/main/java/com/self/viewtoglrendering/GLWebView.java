@@ -103,7 +103,7 @@ public class GLWebView extends WebView implements GLRenderable{
         super.draw(canvas);
 //        super.onDraw(canvas);
         long during = System.currentTimeMillis() - timeStart;
-        Log.e("draw during",during+"");
+//        Log.e("draw during",during+"");
 
     }
 
@@ -126,7 +126,7 @@ public class GLWebView extends WebView implements GLRenderable{
         public void run() {
             while (recordFps)
             {
-                Log.e("fps",fpsCount+"");
+//                Log.e("fps",fpsCount+"");
                 fpsCount = 0;
                 try {
                     Thread.sleep(1000);
