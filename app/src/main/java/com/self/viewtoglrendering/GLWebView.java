@@ -77,7 +77,13 @@ public class GLWebView extends WebView implements GLRenderable{
     // draw magic
     @Override
     public void draw( Canvas canvas ) {
+
+        long timeStart = System.currentTimeMillis();
+//        super.draw(canvas);
         draw1(canvas);
+//        superDraw(canvas);
+//        long during = System.currentTimeMillis() - timeStart;
+//        Log.e("draw during",during+"");
     }
 
     private void draw0(Canvas canvas)
@@ -113,21 +119,28 @@ public class GLWebView extends WebView implements GLRenderable{
         }
         else
         {
-            superDraw(canvas);
+//            superDraw(canvas);
         }
 //        Log.e("draw","draw");
-//        glSurfaceView.requestRender();
-        fpsCount++;
+        glSurfaceView.requestRender();
     }
 
+
+    private long lastDrawTime = System.currentTimeMillis();
     private void superDraw(Canvas canvas)
     {
+
+        fpsCount++;
 
         long timeStart = System.currentTimeMillis();
         super.draw(canvas);
 //        super.onDraw(canvas);
         long during = System.currentTimeMillis() - timeStart;
-        if(during>15)Log.e("draw during",during+"");
+//        if(during>15)
+            Log.e("draw during",during+"");
+
+//        Log.e("fps",""+(1000.0f/(System.currentTimeMillis()-lastDrawTime)));
+        lastDrawTime = System.currentTimeMillis();
 
     }
 

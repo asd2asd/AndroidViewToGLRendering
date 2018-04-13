@@ -17,37 +17,41 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    tools:context=".CameraOnTextureActivity" >
 
-    <!--<Surface?View-->
-        <!--android:id="@+id/cameraOnTexture_surfaceView"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_alignParentTop="true" />-->
+    <SurfaceView
+        android:id="@+id/cameraOnTexture_surfaceView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
 
     <TextView
         android:id="@+id/tfcCameraParams_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:text="tfcCameraParams" />
 
     <TextView
         android:id="@+id/tfcRectSize_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/tfcCameraParams_text" />
+        android:layout_below="@id/tfcCameraParams_text"
+        android:text="tfcRectSize" />
 
     <TextView
         android:id="@+id/tfcZoomArea_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/tfcRectSize_text"/>
+        android:layout_below="@id/tfcRectSize_text"
+        android:text="tfcZoomArea" />
 
 
     <TextView
@@ -55,7 +59,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignTop="@+id/tfcZoom_seekbar" />
+        android:layout_alignTop="@+id/tfcZoom_seekbar"
+        android:text="tfcZoomLabel" />
 
     <SeekBar
         android:id="@+id/tfcZoom_seekbar"
@@ -69,7 +74,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignTop="@+id/tfcSize_seekbar"/>
+        android:layout_alignTop="@+id/tfcSize_seekbar"
+        android:text="tfcSizeLabel" />
 
     <SeekBar
         android:id="@+id/tfcSize_seekbar"
@@ -83,7 +89,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignTop="@+id/tfcRotate_seekbar"/>
+        android:layout_alignTop="@+id/tfcRotate_seekbar"
+        android:text="tfcRotateLabel" />
 
     <SeekBar
         android:id="@+id/tfcRotate_seekbar"

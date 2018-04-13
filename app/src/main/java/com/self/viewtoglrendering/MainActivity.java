@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.MutableInt;
+import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -57,13 +58,14 @@ public class MainActivity extends ActionBarActivity {
 //        mGLSurfaceView.setOnTouchListener((MultiWindowRenderer)viewToGlRenderer);
 //        mGLSurfaceView.setFocusable(true);
         GLWebView glWebView = new GLWebView(this);
+//        glWebView.setLayerType(View.LAYER_TYPE_HARDWARE,null);
 
-//        mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-//        mGLSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-//        mGLSurfaceView.setZOrderOnTop(true);
+        mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        mGLSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        mGLSurfaceView.setZOrderOnTop(true);
         mGLSurfaceView.setEGLContextClientVersion(2);
         mGLSurfaceView.setRenderer(viewToGlRenderer);
-//        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
 
 
