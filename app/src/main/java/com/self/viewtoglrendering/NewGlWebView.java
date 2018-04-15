@@ -1,9 +1,11 @@
 package com.self.viewtoglrendering;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Surface;
 import android.webkit.WebView;
 
@@ -15,6 +17,7 @@ public class NewGlWebView extends WebView {
 
     private SurfaceTexture mSurfaceTexture;
     private Surface mSurface;
+    private OnFrameAvailableListener onFrameAvailableListener;
 
     public NewGlWebView(Context context) {
         super(context);
@@ -58,14 +61,27 @@ public class NewGlWebView extends WebView {
     public void draw( Canvas canvas ) {
 //        super.draw(canvas);
 
+        Log.e("webview","draw");
         Canvas canvas1 = null;
         if(mSurface!=null)
         {
             canvas1 = mSurface.lockHardwareCanvas();
+            canvas1.translate(-getScrollX(), -getScrollY());
             super.draw(canvas1);
             mSurface.unlockCanvasAndPost(canvas1);
+            if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         }
 
+    }
+
+    public void setOnFrameAvailableListener(OnFrameAvailableListener listener)
+    {
+        onFrameAvailableListener = listener;
+    }
+
+    public interface OnFrameAvailableListener
+    {
+        void onFrameAvailable(SurfaceTexture surfaceTexture);
     }
 
 }

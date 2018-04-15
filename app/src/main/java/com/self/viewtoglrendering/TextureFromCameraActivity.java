@@ -15,6 +15,7 @@ package com.self.viewtoglrendering;/*
  */
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES20;
@@ -28,6 +29,8 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.webkit.WebChromeClient;
+import android.webkit.WebViewClient;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -116,6 +119,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
     private int mZoomWidth, mZoomHeight;
     private int mRotateDeg;
 
+    public NewGlWebView contentView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +132,17 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         SurfaceView sv = (SurfaceView) findViewById(R.id.cameraOnTexture_surfaceView);
         SurfaceHolder sh = sv.getHolder();
         sh.addCallback(this);
+
+
+//        sv.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        sv.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        sv.setZOrderOnTop(true);
+
+        contentView = (NewGlWebView)findViewById(R.id.cameraOnTexture_webview);
+        contentView.setWebChromeClient(new WebChromeClient());
+        contentView.setWebViewClient(new WebViewClient());
+        contentView.getSettings().setJavaScriptEnabled(true);
+        contentView.loadUrl("https://www.cnbeta.com");
 
         mZoomBar = (SeekBar) findViewById(R.id.tfcZoom_seekbar);
         mSizeBar = (SeekBar) findViewById(R.id.tfcSize_seekbar);
@@ -147,6 +163,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         super.onResume();
 
         mRenderThread = new RenderThread(mHandler);
+        mRenderThread.setContentView(contentView);
         mRenderThread.setName("TexFromCam Render");
         mRenderThread.start();
         mRenderThread.waitUntilReady();
@@ -421,7 +438,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
      * Thread that handles all rendering and camera operations.
      */
     private static class RenderThread extends Thread implements
-            SurfaceTexture.OnFrameAvailableListener {
+            NewGlWebView.OnFrameAvailableListener {
         // Object must be created on render thread to get correct Looper, but is used from
         // UI thread, so we need to declare it volatile to ensure the UI thread sees a fully
         // constructed object.
@@ -552,7 +569,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
                 finishSurfaceSetup();
             }
 
-            mCameraTexture.setOnFrameAvailableListener(this);
+//            mCameraTexture.setOnFrameAvailableListener(this);
+            mCamera.setOnFrameAvailableListener(this);
         }
 
         /**
@@ -625,6 +643,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
             updateGeometry();
 
+            mCameraTexture.setDefaultBufferSize(width, height);
             // Ready to go, start the camera.
                 mCamera.setPreviewTexture(mCameraTexture);
         }
@@ -647,7 +666,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             float zoomFactor = 1.0f - (mZoomPercent / 100.0f);
             int rotAngle = Math.round(360 * (mRotatePercent / 100.0f));
 
-            mRect.setScale(newWidth, newHeight);
+//            mRect.setScale(newWidth, newHeight);
+            mRect.setScale(width, height);
             mRect.setPosition(mPosX, mPosY);
             mRect.setRotation(rotAngle);
             mRectDrawable.setScale(zoomFactor);
@@ -660,6 +680,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
         @Override   // SurfaceTexture.OnFrameAvailableListener; runs on arbitrary thread
         public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+
             mHandler.sendFrameAvailable();
         }
 
@@ -667,6 +688,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
          * Handles incoming frame of data from the camera.
          */
         private void frameAvailable() {
+
             mCameraTexture.updateTexImage();
             draw();
         }
@@ -679,8 +701,12 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
             GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+            Log.e("opengl","draw");
             mRect.draw(mTexProgram, mDisplayProjectionMatrix);
             mWindowSurface.swapBuffers();
+//            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+//            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
             GlUtil.checkGlError("draw done");
         }
@@ -713,70 +739,76 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
          * Sets mCameraPreviewWidth / mCameraPreviewHeight.
          */
         private void openCamera(int desiredWidth, int desiredHeight, int desiredFps) {
-            if (mCamera != null) {
-                throw new RuntimeException("camera already initialized");
-            }
-
-            Camera.CameraInfo info = new Camera.CameraInfo();
-
-            // Try to find a front-facing camera (e.g. for videoconferencing).
-            int numCameras = Camera.getNumberOfCameras();
-            for (int i = 0; i < numCameras; i++) {
-                Camera.getCameraInfo(i, info);
-                if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    mCamera = Camera.open(i);
-                    break;
-                }
-            }
-            if (mCamera == null) {
-                Log.d(TAG, "No front-facing camera found; opening default");
-                mCamera = Camera.open();    // opens first back-facing camera
-            }
-            if (mCamera == null) {
-                throw new RuntimeException("Unable to open camera");
-            }
-
-            Camera.Parameters parms = mCamera.getParameters();
-
-            CameraUtils.choosePreviewSize(parms, desiredWidth, desiredHeight);
-
-            // Try to set the frame rate to a constant value.
-            int thousandFps = CameraUtils.chooseFixedPreviewFps(parms, desiredFps * 1000);
-
-            // Give the camera a hint that we're recording video.  This can have a big
-            // impact on frame rate.
-            parms.setRecordingHint(true);
-
-            mCamera.setParameters(parms);
-
-            int[] fpsRange = new int[2];
-            Camera.Size mCameraPreviewSize = parms.getPreviewSize();
-            parms.getPreviewFpsRange(fpsRange);
-            String previewFacts = mCameraPreviewSize.width + "x" + mCameraPreviewSize.height;
-            if (fpsRange[0] == fpsRange[1]) {
-                previewFacts += " @" + (fpsRange[0] / 1000.0) + "fps";
-            } else {
-                previewFacts += " @[" + (fpsRange[0] / 1000.0) +
-                        " - " + (fpsRange[1] / 1000.0) + "] fps";
-            }
-            Log.i(TAG, "Camera config: " + previewFacts);
-
-            mCameraPreviewWidth = mCameraPreviewSize.width;
-            mCameraPreviewHeight = mCameraPreviewSize.height;
-            mMainHandler.sendCameraParams(mCameraPreviewWidth, mCameraPreviewHeight,
-                    thousandFps / 1000.0f);
+//            if (mCamera != null) {
+//                throw new RuntimeException("camera already initialized");
+//            }
+//
+//            Camera.CameraInfo info = new Camera.CameraInfo();
+//
+//            // Try to find a front-facing camera (e.g. for videoconferencing).
+//            int numCameras = Camera.getNumberOfCameras();
+//            for (int i = 0; i < numCameras; i++) {
+//                Camera.getCameraInfo(i, info);
+//                if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//                    mCamera = Camera.open(i);
+//                    break;
+//                }
+//            }
+//            if (mCamera == null) {
+//                Log.d(TAG, "No front-facing camera found; opening default");
+//                mCamera = Camera.open();    // opens first back-facing camera
+//            }
+//            if (mCamera == null) {
+//                throw new RuntimeException("Unable to open camera");
+//            }
+//
+//            Camera.Parameters parms = mCamera.getParameters();
+//
+//            CameraUtils.choosePreviewSize(parms, desiredWidth, desiredHeight);
+//
+//            // Try to set the frame rate to a constant value.
+//            int thousandFps = CameraUtils.chooseFixedPreviewFps(parms, desiredFps * 1000);
+//
+//            // Give the camera a hint that we're recording video.  This can have a big
+//            // impact on frame rate.
+//            parms.setRecordingHint(true);
+//
+//            mCamera.setParameters(parms);
+//
+//            int[] fpsRange = new int[2];
+//            Camera.Size mCameraPreviewSize = parms.getPreviewSize();
+//            parms.getPreviewFpsRange(fpsRange);
+//            String previewFacts = mCameraPreviewSize.width + "x" + mCameraPreviewSize.height;
+//            if (fpsRange[0] == fpsRange[1]) {
+//                previewFacts += " @" + (fpsRange[0] / 1000.0) + "fps";
+//            } else {
+//                previewFacts += " @[" + (fpsRange[0] / 1000.0) +
+//                        " - " + (fpsRange[1] / 1000.0) + "] fps";
+//            }
+//            Log.i(TAG, "Camera config: " + previewFacts);
+//
+//            mCameraPreviewWidth = mCameraPreviewSize.width;
+//            mCameraPreviewHeight = mCameraPreviewSize.height;
+//            mMainHandler.sendCameraParams(mCameraPreviewWidth, mCameraPreviewHeight,
+//                    thousandFps / 1000.0f);
         }
 
         /**
          * Stops camera preview, and releases the camera to the system.
          */
         private void releaseCamera() {
-            if (mCamera != null) {
-                mCamera.stopPreview();
-                mCamera.release();
-                mCamera = null;
-                Log.d(TAG, "releaseCamera -- done");
-            }
+//            if (mCamera != null) {
+//                mCamera.stopPreview();
+//                mCamera.release();
+//                mCamera = null;
+//                Log.d(TAG, "releaseCamera -- done");
+//            }
+        }
+
+
+        public void setContentView(NewGlWebView contentView)
+        {
+            this.mCamera = contentView;
         }
     }
 
