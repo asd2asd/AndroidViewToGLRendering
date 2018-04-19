@@ -460,13 +460,14 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        long startTime = System.currentTimeMillis();
         super.onDrawFrame(gl);
         // GL Draw code onwards
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         // Do a complete rotation every 10 seconds.
-        long time = SystemClock.uptimeMillis() % 10000L;
-        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+//        long time = SystemClock.uptimeMillis() % 10000L;
+//        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
 
 
         for(int i=0;i<2;i++)
@@ -508,13 +509,13 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        GLES20.glUniform1i(mTextureUniformHandle, 0);
 
             // Calculate position of the light. Rotate and then push into the distance.
-            Matrix.setIdentityM(mLightModelMatrix, 0);
+//            Matrix.setIdentityM(mLightModelMatrix, 0);
 //        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -4.0f);
 //        Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-            Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+//            Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 1.5f);
 
-            Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
-            Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
+//            Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+//            Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
 
 
             Matrix.setIdentityM(mModelMatrix, 0);
@@ -524,7 +525,7 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
                     (float)(touchOffsetX+ i*viewWidth)/viewWidth,
                     0.0f,0.0f);
 
-            Log.e("touch",touchOffsetX+"");
+//            Log.e("touch",touchOffsetX+"");
             drawCube();
 
             // Draw a point to indicate the light.
@@ -532,7 +533,11 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
         }
 
 
-        drawLight();
+//        drawLight();
+//        Log.e("opengl draw","0");
+
+        long endTime = System.currentTimeMillis() - startTime;
+        if(endTime>10)Log.e("during ",endTime+"");
     }
 
     /**

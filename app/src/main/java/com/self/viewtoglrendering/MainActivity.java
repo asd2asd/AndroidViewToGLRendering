@@ -52,7 +52,7 @@ public class MainActivity extends ActionBarActivity {
         RelativeLayout relativeLayout = new RelativeLayout(this);
         this.setContentView(relativeLayout);
 
-        ViewToGLRenderer viewToGlRenderer = new MultiWindowRenderer(this);
+        ViewToGLRenderer viewToGlRenderer = new CubeGLRenderer(this);
 
         mGLSurfaceView = new GLSurfaceView(this);
 //        mGLSurfaceView.setOnTouchListener((MultiWindowRenderer)viewToGlRenderer);
@@ -65,7 +65,7 @@ public class MainActivity extends ActionBarActivity {
         mGLSurfaceView.setZOrderOnTop(true);
         mGLSurfaceView.setEGLContextClientVersion(2);
         mGLSurfaceView.setRenderer(viewToGlRenderer);
-        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+//        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
 
 

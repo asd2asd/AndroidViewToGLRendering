@@ -61,7 +61,9 @@ public class NewGlWebView extends WebView {
     public void draw( Canvas canvas ) {
 //        super.draw(canvas);
 
-        Log.e("webview","draw");
+//        Log.e("webview","draw");
+
+        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         Canvas canvas1 = null;
         if(mSurface!=null)
         {
@@ -69,7 +71,6 @@ public class NewGlWebView extends WebView {
             canvas1.translate(-getScrollX(), -getScrollY());
             super.draw(canvas1);
             mSurface.unlockCanvasAndPost(canvas1);
-            if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         }
 
     }

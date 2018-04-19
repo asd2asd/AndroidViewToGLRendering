@@ -690,25 +690,32 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         private void frameAvailable() {
 
             mCameraTexture.updateTexImage();
+
+//            long startTime = System.currentTimeMillis();
             draw();
+//            long endTime = System.currentTimeMillis() - startTime;
+//            Log.e("during ",endTime+"");
         }
 
         /**
          * Draws the scene and submits the buffer.
          */
         private void draw() {
-            GlUtil.checkGlError("draw start");
+            long startTime = System.currentTimeMillis();
+//            GlUtil.checkGlError("draw start");
 
-            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+//            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
-            Log.e("opengl","draw");
+//            Log.e("opengl","draw");
             mRect.draw(mTexProgram, mDisplayProjectionMatrix);
             mWindowSurface.swapBuffers();
 //            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 //            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
-            GlUtil.checkGlError("draw done");
+//            GlUtil.checkGlError("draw done");
+            long endTime = System.currentTimeMillis() - startTime;
+            if(endTime>=10)Log.e("during ",endTime+"");
         }
 
         private void setZoom(int percent) {
