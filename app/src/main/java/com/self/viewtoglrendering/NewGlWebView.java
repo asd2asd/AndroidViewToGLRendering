@@ -57,6 +57,11 @@ public class NewGlWebView extends WebView {
 
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec-paddingBottom);
+    }
+
     // draw magic
     @Override
     public void draw( Canvas canvas ) {
@@ -64,6 +69,8 @@ public class NewGlWebView extends WebView {
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
+
+        long startTime = System.currentTimeMillis();
 
         if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         Canvas canvas1 = null;
@@ -75,6 +82,8 @@ public class NewGlWebView extends WebView {
             super.draw(canvas1);
             mSurface.unlockCanvasAndPost(canvas1);
         }
+        long endTime = System.currentTimeMillis() - startTime;
+        Log.e("during ",endTime+"");
 
     }
 
@@ -91,22 +100,41 @@ public class NewGlWebView extends WebView {
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-//		if(oldt==t) Toast.makeText(mContext,"scroll stop",Toast.LENGTH_SHORT).show();
-        int scrollDistance = t - oldt;
-		if (null != onScrollListener)
-		{
-//			if (t==0||scrollDistance < -20)
-			if(scrollDistance<0) {
-				onScrollListener.OnScrollUp(this, oldt, t);
-//				lastScrollUp = 1;
-			}
-			else if (scrollDistance > 0) {
-				onScrollListener.OnScrollDown(this, oldt, t);
-//				lastScrollUp = 2;
-			}
-		}
-//        this.setPadding(0,0,0,t);
+//        int scrollDistance = t - oldt;
+//		if (null != onScrollListener)
+//		{
+//			if(scrollDistance<0) {
+//				onScrollListener.OnScrollUp(this, oldt, t);
+//			}
+//			else if (scrollDistance > 0) {
+//				onScrollListener.OnScrollDown(this, oldt, t);
+//			}
+//		}
+        scrollChange(oldt,t);
+
+        long currentTime = System.currentTimeMillis();
+        long during = currentTime - resizeTime;
+        if(during>30)
+        {
+            resizeTime = currentTime;
+            this.requestLayout();
+        }
         super.onScrollChanged(l, t, oldl, oldt);
+    }
+
+    private int paddingBottom = 0;
+    private long resizeTime = 0;
+
+    private void scrollChange(int oldt,int t)
+    {
+        int scrollDistance = t - oldt;
+
+        int oldPadding = paddingBottom;
+        int newPadding = oldPadding - (scrollDistance)/3;
+        if(newPadding>200) newPadding = 200;
+        if(newPadding<0) newPadding = 0;
+        Log.e(oldPadding+"",newPadding+"");
+        paddingBottom = newPadding;
     }
 
     public interface OnScrollListener
