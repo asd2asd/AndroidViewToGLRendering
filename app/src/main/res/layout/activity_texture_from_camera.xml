@@ -20,12 +20,16 @@
     android:layout_height="match_parent"
     tools:context=".CameraOnTextureActivity" >
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <com.self.viewtoglrendering.NewGlWebView
         android:id="@+id/cameraOnTexture_webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
     </com.self.viewtoglrendering.NewGlWebView>
+    </RelativeLayout>
 
     <SurfaceView
         android:id="@+id/cameraOnTexture_surfaceView"
@@ -34,8 +38,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:visibility="visible"/>
+        android:layout_alignParentTop="true"/>
 
     <TextView
         android:id="@+id/tfcCameraParams_text"

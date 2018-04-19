@@ -29,7 +29,9 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -79,7 +81,7 @@ import java.lang.ref.WeakReference;
  * </ol>
  */
 public class TextureFromCameraActivity extends Activity implements SurfaceHolder.Callback,
-        SeekBar.OnSeekBarChangeListener {
+        SeekBar.OnSeekBarChangeListener, NewGlWebView.OnScrollListener {
     private static final String TAG = "t";
 
     private static final int DEFAULT_ZOOM_PERCENT = 0;      // 0-100
@@ -136,13 +138,14 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
 //        sv.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         sv.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        sv.setZOrderOnTop(true);
+//        sv.setZOrderOnTop(true);
 
         contentView = (NewGlWebView)findViewById(R.id.cameraOnTexture_webview);
         contentView.setWebChromeClient(new WebChromeClient());
         contentView.setWebViewClient(new WebViewClient());
         contentView.getSettings().setJavaScriptEnabled(true);
-        contentView.loadUrl("https://www.cnbeta.com");
+        contentView.loadUrl("https://m.hupu.com");
+        contentView.setOnScrollListener(this);
 
         mZoomBar = (SeekBar) findViewById(R.id.tfcZoom_seekbar);
         mSizeBar = (SeekBar) findViewById(R.id.tfcSize_seekbar);
@@ -331,6 +334,25 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 //        str = getString(R.string.tfcZoomArea, mZoomWidth, mZoomHeight);
 //        tv = (TextView) findViewById(R.id.tfcZoomArea_text);
 //        tv.setText(str);
+    }
+
+    @Override
+    public void OnScrollUp(WebView webView, int oldt, int top) {
+        int oldPadding = ((ViewGroup)contentView.getParent()).getPaddingBottom();
+        int newPadding = oldPadding + (oldt - top)/3;
+        if(newPadding>200) newPadding = 200;
+        Log.e(oldPadding+"",newPadding+"");
+        ((ViewGroup)contentView.getParent()).setPadding(0,0,0,newPadding);
+    }
+
+    @Override
+    public void OnScrollDown(WebView webView, int oldt, int top) {
+
+        int oldPadding = ((ViewGroup)contentView.getParent()).getPaddingBottom();
+        int newPadding = oldPadding - (top-oldt)/3;
+        if(newPadding<0) newPadding = 0;
+        Log.e(oldPadding+"",newPadding+"");
+        ((ViewGroup)contentView.getParent()).setPadding(0,0,0,newPadding);
     }
 
     /**
@@ -715,7 +737,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
 //            GlUtil.checkGlError("draw done");
             long endTime = System.currentTimeMillis() - startTime;
-            if(endTime>=10)Log.e("during ",endTime+"");
+//            if(endTime>=10)Log.e("during ",endTime+"");
         }
 
         private void setZoom(int percent) {
