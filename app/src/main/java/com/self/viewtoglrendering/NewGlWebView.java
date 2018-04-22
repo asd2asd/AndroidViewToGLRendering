@@ -70,20 +70,27 @@ public class NewGlWebView extends WebView {
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
 
+        canResizeHeight = false;
         long startTime = System.currentTimeMillis();
 
         if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
+
+        if(canvas.getHeight() == originHeight - paddingBottom) canResizeHeight = true;
+
+
         Canvas canvas1 = null;
         if(mSurface!=null)
         {
             canvas1 = mSurface.lockHardwareCanvas();
+            originHeight = canvas1.getHeight();
             canvas1.translate(-getScrollX(), -getScrollY());
 //            canvas1.clipRect(0,0,1440,1440);
             super.draw(canvas1);
             mSurface.unlockCanvasAndPost(canvas1);
         }
         long endTime = System.currentTimeMillis() - startTime;
-        Log.e("during ",endTime+"");
+//        Log.e("during ",endTime+"");
+
 
     }
 
@@ -98,6 +105,9 @@ public class NewGlWebView extends WebView {
         onScrollListener = listener;
     }
 
+
+    private final int MAX_SCROLL_DISTANCE = 200;
+    private final int SCROLL_DIVISOR = 5;
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 //        int scrollDistance = t - oldt;
@@ -110,30 +120,74 @@ public class NewGlWebView extends WebView {
 //				onScrollListener.OnScrollDown(this, oldt, t);
 //			}
 //		}
-        scrollChange(oldt,t);
-
         long currentTime = System.currentTimeMillis();
         long during = currentTime - resizeTime;
-        if(during>30)
+        if(during>1000)
         {
             resizeTime = currentTime;
-            this.requestLayout();
         }
+        else
+        {
+            float v = ((t-lastTop)*1000.0f/during);
+            Log.e("v",v+"");
+//            if(v>7000)
+//            {
+//                resizeTime = currentTime;
+//                lastTop = t;
+//                scrollChange(oldt,oldt+MAX_SCROLL_DISTANCE*SCROLL_DIVISOR);
+//                if(canResizeHeight)this.requestLayout();
+//
+//            }
+//            else if(v<-7000)
+//            {
+//                resizeTime = currentTime;
+//                lastTop = t;
+//                scrollChange(oldt,oldt-MAX_SCROLL_DISTANCE*SCROLL_DIVISOR);
+//                if(canResizeHeight)this.requestLayout();
+//            }
+//            else
+                if(during>30)
+            {
+                resizeTime = currentTime;
+                lastTop = t;
+                scrollChange(oldt,t);
+//                if(canResizeHeight)
+                {
+                    this.requestLayout();
+//                    canResizeHeight = false;
+                }
+            }
+
+        }
+//        if(during>300)
+//        {
+//            resizeTime = currentTime;
+//            this.requestLayout();
+//        }
+
         super.onScrollChanged(l, t, oldl, oldt);
+    }
+
+    private void resizeHeight()
+    {
+
     }
 
     private int paddingBottom = 0;
     private long resizeTime = 0;
+    private int lastTop = 0;
+    private int originHeight;
+    private boolean canResizeHeight = false;
 
     private void scrollChange(int oldt,int t)
     {
         int scrollDistance = t - oldt;
 
         int oldPadding = paddingBottom;
-        int newPadding = oldPadding - (scrollDistance)/3;
-        if(newPadding>200) newPadding = 200;
+        int newPadding = oldPadding - (scrollDistance)/SCROLL_DIVISOR;
+        if(newPadding>MAX_SCROLL_DISTANCE) newPadding = MAX_SCROLL_DISTANCE;
         if(newPadding<0) newPadding = 0;
-        Log.e(oldPadding+"",newPadding+"");
+//        Log.e(oldPadding+"",newPadding+"");
         paddingBottom = newPadding;
     }
 

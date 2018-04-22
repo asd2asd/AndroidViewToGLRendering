@@ -81,7 +81,7 @@ import java.lang.ref.WeakReference;
  * </ol>
  */
 public class TextureFromCameraActivity extends Activity implements SurfaceHolder.Callback,
-        SeekBar.OnSeekBarChangeListener, NewGlWebView.OnScrollListener {
+        SeekBar.OnSeekBarChangeListener{
     private static final String TAG = "t";
 
     private static final int DEFAULT_ZOOM_PERCENT = 0;      // 0-100
@@ -145,7 +145,6 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         contentView.setWebViewClient(new WebViewClient());
         contentView.getSettings().setJavaScriptEnabled(true);
         contentView.loadUrl("https://m.smzdm.com");
-        contentView.setOnScrollListener(this);
 
         mZoomBar = (SeekBar) findViewById(R.id.tfcZoom_seekbar);
         mSizeBar = (SeekBar) findViewById(R.id.tfcSize_seekbar);
@@ -336,24 +335,6 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 //        tv.setText(str);
     }
 
-    @Override
-    public void OnScrollUp(WebView webView, int oldt, int top) {
-//        int oldPadding = ((ViewGroup)contentView.getParent()).getPaddingBottom();
-//        int newPadding = oldPadding + (oldt - top)/3;
-//        if(newPadding>200) newPadding = 200;
-//        Log.e(oldPadding+"",newPadding+"");
-//        ((ViewGroup)contentView.getParent()).setPadding(0,0,0,newPadding);
-    }
-
-    @Override
-    public void OnScrollDown(WebView webView, int oldt, int top) {
-
-//        int oldPadding = ((ViewGroup)contentView.getParent()).getPaddingBottom();
-//        int newPadding = oldPadding - (top-oldt)/3;
-//        if(newPadding<0) newPadding = 0;
-//        Log.e(oldPadding+"",newPadding+"");
-//        ((ViewGroup)contentView.getParent()).setPadding(0,0,0,newPadding);
-    }
 
     /**
      * Custom message handler for main UI thread.
