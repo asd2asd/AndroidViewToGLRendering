@@ -20,7 +20,7 @@
     android:layout_height="match_parent"
     tools:context=".CameraOnTextureActivity" >
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     <com.self.viewtoglrendering.NewGlWebView
@@ -29,7 +29,7 @@
         android:layout_height="match_parent">
 
     </com.self.viewtoglrendering.NewGlWebView>
-    </RelativeLayout>
+    </FrameLayout>
 
     <SurfaceView
         android:id="@+id/cameraOnTexture_surfaceView"

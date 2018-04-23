@@ -288,34 +288,34 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
     public void onStartTrackingTouch(SeekBar seekBar) {}
     @Override   // SeekBar.OnSeekBarChangeListener
     public void onStopTrackingTouch(SeekBar seekBar) {}
-    @Override
-
-    /**
-     * Handles any touch events that aren't grabbed by one of the controls.
-     */
-    public boolean onTouchEvent(MotionEvent e) {
-        float x = e.getX();
-        float y = e.getY();
-
-        switch (e.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_DOWN:
-                //Log.v(TAG, "onTouchEvent act=" + e.getAction() + " x=" + x + " y=" + y);
-                if (mRenderThread != null) {
-                    RenderHandler rh = mRenderThread.getHandler();
-                    rh.sendPosition((int) x, (int) y);
-
-                    // Forcing a redraw can cause sluggish-looking behavior if the touch
-                    // events arrive quickly.
-                    //rh.sendRedraw();
-                }
-                break;
-            default:
-                break;
-        }
-
-        return true;
-    }
+//    @Override
+//
+//    /**
+//     * Handles any touch events that aren't grabbed by one of the controls.
+//     */
+//    public boolean onTouchEvent(MotionEvent e) {
+//        float x = e.getX();
+//        float y = e.getY();
+//
+//        switch (e.getAction()) {
+//            case MotionEvent.ACTION_MOVE:
+//            case MotionEvent.ACTION_DOWN:
+//                //Log.v(TAG, "onTouchEvent act=" + e.getAction() + " x=" + x + " y=" + y);
+//                if (mRenderThread != null) {
+//                    RenderHandler rh = mRenderThread.getHandler();
+//                    rh.sendPosition((int) x, (int) y);
+//
+//                    // Forcing a redraw can cause sluggish-looking behavior if the touch
+//                    // events arrive quickly.
+//                    //rh.sendRedraw();
+//                }
+//                break;
+//            default:
+//                break;
+//        }
+//
+//        return true;
+//    }
 
     /**
      * Updates the current state of the controls.

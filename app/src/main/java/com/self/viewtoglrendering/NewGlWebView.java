@@ -7,6 +7,8 @@ import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 
 /**
@@ -62,10 +64,11 @@ public class NewGlWebView extends WebView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec-paddingBottom);
     }
 
+    private long drawTime;
     // draw magic
     @Override
     public void draw( Canvas canvas ) {
-//        super.draw(canvas);
+        super.draw(canvas);
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
@@ -78,18 +81,22 @@ public class NewGlWebView extends WebView {
         if(canvas.getHeight() == originHeight - paddingBottom) canResizeHeight = true;
 
 
-        Canvas canvas1 = null;
-        if(mSurface!=null)
-        {
-            canvas1 = mSurface.lockHardwareCanvas();
-            originHeight = canvas1.getHeight();
-            canvas1.translate(-getScrollX(), -getScrollY());
-//            canvas1.clipRect(0,0,1440,1440);
-            super.draw(canvas1);
-            mSurface.unlockCanvasAndPost(canvas1);
-        }
-        long endTime = System.currentTimeMillis() - startTime;
-//        Log.e("during ",endTime+"");
+//        Canvas canvas1 = null;
+//        if(mSurface!=null)
+//        {
+//            canvas1 = mSurface.lockHardwareCanvas();
+//            originHeight = canvas1.getHeight();
+//            canvas1.translate(-getScrollX(), -getScrollY());
+////            canvas1.clipRect(0,0,1440,1440);
+//            super.draw(canvas1);
+//            mSurface.unlockCanvasAndPost(canvas1);
+//        }
+//        long endTime = System.currentTimeMillis() - startTime;
+//
+        long during = System.currentTimeMillis() - drawTime;
+        if(during>30)Log.e((during)+"","m");
+        drawTime = System.currentTimeMillis();
+////        Log.e("during ",endTime+"");
 
 
     }
@@ -107,7 +114,7 @@ public class NewGlWebView extends WebView {
 
 
     private final int MAX_SCROLL_DISTANCE = 200;
-    private final int SCROLL_DIVISOR = 5;
+    private final int SCROLL_DIVISOR = 6;
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 //        int scrollDistance = t - oldt;
@@ -129,7 +136,7 @@ public class NewGlWebView extends WebView {
         else
         {
             float v = ((t-lastTop)*1000.0f/during);
-            Log.e("v",v+"");
+//            Log.e("v",v+"");
 //            if(v>7000)
 //            {
 //                resizeTime = currentTime;
@@ -153,7 +160,12 @@ public class NewGlWebView extends WebView {
                 scrollChange(oldt,t);
 //                if(canResizeHeight)
                 {
+                    this.forceLayout();
                     this.requestLayout();
+
+//                    int  width =View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+//                    int  height =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);
+//                    this.measure(width,height);
 //                    canResizeHeight = false;
                 }
             }
