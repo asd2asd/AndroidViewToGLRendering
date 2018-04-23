@@ -59,16 +59,15 @@ public class NewGlWebView extends WebView {
 
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec-paddingBottom);
-    }
+//    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec-paddingBottom);
+//    }
 
     private long drawTime;
     // draw magic
     @Override
     public void draw( Canvas canvas ) {
-        super.draw(canvas);
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
@@ -80,7 +79,7 @@ public class NewGlWebView extends WebView {
 
         if(canvas.getHeight() == originHeight - paddingBottom) canResizeHeight = true;
 
-
+        super.draw(canvas);
 //        Canvas canvas1 = null;
 //        if(mSurface!=null)
 //        {
@@ -114,7 +113,7 @@ public class NewGlWebView extends WebView {
 
 
     private final int MAX_SCROLL_DISTANCE = 200;
-    private final int SCROLL_DIVISOR = 6;
+    private final int SCROLL_DIVISOR = 10;
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 //        int scrollDistance = t - oldt;
@@ -127,6 +126,8 @@ public class NewGlWebView extends WebView {
 //				onScrollListener.OnScrollDown(this, oldt, t);
 //			}
 //		}
+
+        if(originHeight==0&getHeight()>0) originHeight = getHeight();
         long currentTime = System.currentTimeMillis();
         long during = currentTime - resizeTime;
         if(during>1000)
@@ -160,8 +161,14 @@ public class NewGlWebView extends WebView {
                 scrollChange(oldt,t);
 //                if(canResizeHeight)
                 {
-                    this.forceLayout();
-                    this.requestLayout();
+//                    this.forceLayout();
+//                    this.getParent().requestLayout();
+//                    this.measure(this.getWidth(),this.getHeight());
+                    long startTime = System.currentTimeMillis();
+                    this.layout(0,0,getWidth(),originHeight - paddingBottom);
+                    long endTime = System.currentTimeMillis() - startTime;
+//                    Log.e("layout during",endTime+"");
+//                    this.requestLayout();
 
 //                    int  width =View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 //                    int  height =View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED);

@@ -18,7 +18,8 @@ public class FrameLayoutActivity extends Activity {
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient());
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl("https://m.smzdm.com");
+//        webView.getSettings().setJavaScriptEnabled(false);
+//        webView.pauseTimers();
+        webView.loadUrl("https://m.hupu.com");
     }
 }
