@@ -71,11 +71,6 @@ public class NewGlWebView extends WebView {
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
-        if(!afterResizeDraw)
-        {
-//            Log.e("after resize draw "+(System.currentTimeMillis() - resizeTime)+"",canvas.getHeight()+","+lastResizeHeight);
-            afterResizeDraw = true;
-        }
 
         canResizeHeight = false;
         long startTime = System.currentTimeMillis();
@@ -84,6 +79,11 @@ public class NewGlWebView extends WebView {
 
         if(canvas.getHeight() == originHeight - paddingBottom) canResizeHeight = true;
 
+//        if(!afterResizeDraw)
+        {
+            Log.e("after resize draw "+(System.currentTimeMillis() - resizeTime)+"",canvas.getHeight()+","+lastResizeHeight);
+            afterResizeDraw = true;
+        }
         super.draw(canvas);
 //        Canvas canvas1 = null;
 //        if(mSurface!=null)
@@ -98,7 +98,8 @@ public class NewGlWebView extends WebView {
 //        long endTime = System.currentTimeMillis() - startTime;
 //
         long during = System.currentTimeMillis() - drawTime;
-        if(during>30)Log.e((during)+"","m");
+//        if(during>20)
+            Log.e((during)+"",canvas.getHeight()+","+lastResizeHeight);
         drawTime = System.currentTimeMillis();
 ////        Log.e("during ",endTime+"");
 
@@ -181,9 +182,9 @@ public class NewGlWebView extends WebView {
                     long startTime = System.currentTimeMillis();
 //                    this.invalidate();
                     int resizeHeight = originHeight - testPadding;
-                    this.layout(0,0,getWidth(),resizeHeight);
                     afterResizeDraw = false;
                     lastResizeHeight = resizeHeight;
+                    this.layout(0,0,getWidth(),resizeHeight);
 //                    this.invalidate();
                     long endTime = System.currentTimeMillis() - startTime;
 //                    Log.e("layout during",endTime+"");
