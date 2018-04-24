@@ -1,8 +1,8 @@
 package com.self.viewtoglrendering;
 
+import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.MutableInt;
 import android.view.View;
@@ -15,7 +15,7 @@ import com.self.viewtoglrendering.cuberenerer.CubeGLRenderer;
 import com.self.viewtoglrendering.cuberenerer.MultiWindowRenderer;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     private GLSurfaceView mGLSurfaceView;
     private GLRenderable mGLLinearLayout;
