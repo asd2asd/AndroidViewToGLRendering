@@ -71,6 +71,11 @@ public class NewGlWebView extends WebView {
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
+        if(!afterResizeDraw)
+        {
+            Log.e("after resize draw",(System.currentTimeMillis() - resizeTime)+"");
+            afterResizeDraw = true;
+        }
 
         canResizeHeight = false;
         long startTime = System.currentTimeMillis();
@@ -93,7 +98,7 @@ public class NewGlWebView extends WebView {
 //        long endTime = System.currentTimeMillis() - startTime;
 //
         long during = System.currentTimeMillis() - drawTime;
-        if(during>30)Log.e((during)+"","m");
+//        if(during>30)Log.e((during)+"","m");
         drawTime = System.currentTimeMillis();
 ////        Log.e("during ",endTime+"");
 
@@ -154,18 +159,30 @@ public class NewGlWebView extends WebView {
 //                if(canResizeHeight)this.requestLayout();
 //            }
 //            else
-                if(during>30)
+//                if(during>30)
             {
                 resizeTime = currentTime;
                 lastTop = t;
                 scrollChange(oldt,t);
+                if(t>oldt)
+                {
+                    if(testPadding>=3)
+                        testPadding -= 3;
+                }
+                else
+                {
+                    testPadding += 3;
+                }
 //                if(canResizeHeight)
                 {
 //                    this.forceLayout();
 //                    this.getParent().requestLayout();
 //                    this.measure(this.getWidth(),this.getHeight());
                     long startTime = System.currentTimeMillis();
-                    this.layout(0,0,getWidth(),originHeight - paddingBottom);
+//                    this.invalidate();
+                    this.layout(0,0,getWidth(),originHeight - testPadding);
+                    afterResizeDraw = false;
+//                    this.invalidate();
                     long endTime = System.currentTimeMillis() - startTime;
 //                    Log.e("layout during",endTime+"");
 //                    this.requestLayout();
@@ -191,8 +208,10 @@ public class NewGlWebView extends WebView {
     {
 
     }
+    private boolean afterResizeDraw = false;
 
     private int paddingBottom = 0;
+    private int testPadding = 0;
     private long resizeTime = 0;
     private int lastTop = 0;
     private int originHeight;
