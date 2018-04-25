@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,9 +82,10 @@ public class NewGlWebView extends WebView {
 
 //        if(!afterResizeDraw)
         {
-            Log.e("after resize draw "+(System.currentTimeMillis() - resizeTime)+"",canvas.getHeight()+","+lastResizeHeight);
+//            Log.e("after resize draw "+(System.currentTimeMillis() - resizeTime)+"",canvas.getHeight()+","+lastResizeHeight);
             afterResizeDraw = true;
         }
+
         super.draw(canvas);
 //        Canvas canvas1 = null;
 //        if(mSurface!=null)
@@ -98,11 +100,14 @@ public class NewGlWebView extends WebView {
 //        long endTime = System.currentTimeMillis() - startTime;
 //
         long during = System.currentTimeMillis() - drawTime;
-//        if(during>20)
+        if(during>20)
             Log.e((during)+"",canvas.getHeight()+","+lastResizeHeight);
         drawTime = System.currentTimeMillis();
 ////        Log.e("during ",endTime+"");
 
+
+
+        if(canChangeHeight&&lastResizeHeight>10&&lastResizeHeight!=canvas.getHeight())this.layout(0,0,getWidth(),lastResizeHeight);
 
     }
 
@@ -184,7 +189,8 @@ public class NewGlWebView extends WebView {
                     int resizeHeight = originHeight - testPadding;
                     afterResizeDraw = false;
                     lastResizeHeight = resizeHeight;
-                    this.layout(0,0,getWidth(),resizeHeight);
+//                    if(!denyResizeHeight)
+//                    this.layout(0,0,getWidth(),resizeHeight);
 //                    this.invalidate();
                     long endTime = System.currentTimeMillis() - startTime;
 //                    Log.e("layout during",endTime+"");
@@ -211,6 +217,8 @@ public class NewGlWebView extends WebView {
     {
 
     }
+
+    private boolean canChangeHeight = false;
     private boolean afterResizeDraw = false;
     private int lastResizeHeight = 0;
 
@@ -231,6 +239,23 @@ public class NewGlWebView extends WebView {
         if(newPadding<0) newPadding = 0;
 //        Log.e(oldPadding+"",newPadding+"");
         paddingBottom = newPadding;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction())
+        {
+
+            case MotionEvent.ACTION_DOWN:
+                canChangeHeight = true;
+                break;
+            case MotionEvent.ACTION_UP:
+                canChangeHeight = false;
+                break;
+            default:
+                break;
+        }
+        return super.onTouchEvent(event);
     }
 
     public interface OnScrollListener
