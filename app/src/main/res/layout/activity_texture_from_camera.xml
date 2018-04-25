@@ -20,16 +20,12 @@
     android:layout_height="match_parent"
     tools:context=".CameraOnTextureActivity" >
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
     <com.self.viewtoglrendering.NewGlWebView
         android:id="@+id/cameraOnTexture_webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
     </com.self.viewtoglrendering.NewGlWebView>
-    </FrameLayout>
 
     <SurfaceView
         android:id="@+id/cameraOnTexture_surfaceView"
