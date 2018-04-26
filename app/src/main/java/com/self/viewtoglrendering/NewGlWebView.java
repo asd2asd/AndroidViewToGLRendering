@@ -129,7 +129,7 @@ public class NewGlWebView extends WebView {
 
 
     private final int MAX_SCROLL_DISTANCE = 200;
-    private final int SCROLL_DIVISOR = 10;
+    private final int SCROLL_DIVISOR = 2;
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 //        int scrollDistance = t - oldt;
