@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -144,7 +145,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         contentView.setWebChromeClient(new WebChromeClient());
         contentView.setWebViewClient(new WebViewClient());
         contentView.getSettings().setJavaScriptEnabled(true);
-        contentView.loadUrl("https://m.smzdm.com");
+        contentView.loadUrl("https://hao.360.cn");
 
         mZoomBar = (SeekBar) findViewById(R.id.tfcZoom_seekbar);
         mSizeBar = (SeekBar) findViewById(R.id.tfcSize_seekbar);
@@ -157,6 +158,20 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         mRotateBar.setOnSeekBarChangeListener(this);
 
         updateControls();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            if(contentView.canGoBack());
+            {
+                contentView.goBack();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -182,6 +197,21 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             Log.d(TAG, "No previous surface");
         }
         Log.d(TAG, "onResume END");
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true)
+//                {
+//                    try {
+//                        Thread.sleep(10);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    mRenderThread.onFrameAvailable(null);
+//                }
+//            }
+//        }).start();
     }
 
     @Override
@@ -348,6 +378,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         private static final int MSG_SEND_RECT_SIZE = 2;
         private static final int MSG_SEND_ZOOM_AREA = 3;
         private static final int MSG_SEND_ROTATE_DEG = 4;
+        private static final int MSG_FRAME_AVAILABLE = 5;
 
         private WeakReference<TextureFromCameraActivity> mWeakActivity;
 
@@ -394,6 +425,10 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             sendMessage(obtainMessage(MSG_SEND_ROTATE_DEG, rot, 0));
         }
 
+
+        public void sendFrameAvailable() {
+            sendMessage(obtainMessage(MSG_FRAME_AVAILABLE));
+        }
         @Override
         public void handleMessage(Message msg) {
             TextureFromCameraActivity activity = mWeakActivity.get();
@@ -430,6 +465,11 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
                     activity.updateControls();
                     break;
                 }
+
+
+                case MSG_FRAME_AVAILABLE:
+                    activity.mRenderThread.frameAvailable();
+                    break;
                 default:
                     throw new RuntimeException("Unknown message " + msg.what);
             }
@@ -685,6 +725,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         public void onFrameAvailable(SurfaceTexture surfaceTexture) {
 
             mHandler.sendFrameAvailable();
+//            mMainHandler.sendFrameAvailable();
+
         }
 
         /**
@@ -692,6 +734,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
          */
         private void frameAvailable() {
 
+            if(null==mCameraTexture)
+                return;
             mCameraTexture.updateTexImage();
 
 //            long startTime = System.currentTimeMillis();
@@ -703,6 +747,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         /**
          * Draws the scene and submits the buffer.
          */
+
+        private long drawTime;
         private void draw() {
             long startTime = System.currentTimeMillis();
 //            GlUtil.checkGlError("draw start");
@@ -717,8 +763,12 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 //            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
 //            GlUtil.checkGlError("draw done");
-            long endTime = System.currentTimeMillis() - startTime;
-//            if(endTime>=10)Log.e("during ",endTime+"");
+            long curTime = System.currentTimeMillis();
+            long endTime = curTime - startTime;
+            long during = curTime - drawTime;
+            drawTime = curTime;
+//            if(during>20)
+                Log.e("opengl draw",during+","+endTime);
         }
 
         private void setZoom(int percent) {
