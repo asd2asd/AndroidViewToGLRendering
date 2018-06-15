@@ -117,7 +117,6 @@ public class GLWebView extends WebView implements GLRenderable{
 //                    GLWebView.this.superDraw(glAttachedCanvas);
 //                }
 //            }).start();
-//            super.draw(canvas);
 
 //            canvas.drawText(System.currentTimeMillis()+"",getScrollX()+500,getScrollY()+500,paint);
 
@@ -128,6 +127,7 @@ public class GLWebView extends WebView implements GLRenderable{
             // notify the canvas is updated
             mViewToGLRenderer.onDrawViewEnd();
             if(glSurfaceView!=null) glSurfaceView.requestRender();
+//            super.draw(canvas);
         }
         else
         {

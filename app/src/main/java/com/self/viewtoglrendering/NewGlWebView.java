@@ -76,7 +76,6 @@ public class NewGlWebView extends WebView {
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
-        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
 
 
         canResizeHeight = false;
@@ -115,6 +114,7 @@ public class NewGlWebView extends WebView {
         }
 
         super.onDraw(canvas);
+//        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         long endTime = System.currentTimeMillis() - startTime;
 
         long during = System.currentTimeMillis() - drawTime;

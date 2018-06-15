@@ -207,20 +207,20 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         }
         Log.d(TAG, "onResume END");
 
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (true)
-//                {
-//                    try {
-//                        Thread.sleep(10);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    mRenderThread.onFrameAvailable(null);
-//                }
-//            }
-//        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true)
+                {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    mRenderThread.onFrameAvailable(null);
+                }
+            }
+        }).start();
 
 
 //        recordFps = false;
@@ -815,6 +815,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
         private long drawTime;
         private void draw() {
+            if(mWindowSurface==null) return;
             long startTime = System.currentTimeMillis();
 //            GlUtil.checkGlError("draw start");
 
