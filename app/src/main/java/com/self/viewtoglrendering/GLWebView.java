@@ -3,6 +3,8 @@ package com.self.viewtoglrendering;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
 import android.os.Looper;
@@ -24,6 +26,7 @@ public class GLWebView extends WebView implements GLRenderable{
     private GLSurfaceView glSurfaceView;
     private boolean recordFps;
     private int fpsCount;
+    private Paint paint;
 
 
     // default constructors
@@ -50,6 +53,7 @@ public class GLWebView extends WebView implements GLRenderable{
         new Thread(fpsRunnable).start();
 
         this.getSettings().setJavaScriptEnabled(true);
+        paint = new Paint();
     }
 
 
@@ -101,8 +105,8 @@ public class GLWebView extends WebView implements GLRenderable{
         final Canvas glAttachedCanvas = mViewToGLRenderer.onDrawViewBegin();
         if(glAttachedCanvas != null) {
             //translate canvas to reflect view scrolling
-            float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
-            glAttachedCanvas.scale(xScale, xScale);
+//            float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
+//            glAttachedCanvas.scale(xScale, xScale);
             glAttachedCanvas.translate(-getScrollX(), -getScrollY());
 
             //draw the view to provided canvas
@@ -113,9 +117,17 @@ public class GLWebView extends WebView implements GLRenderable{
 //                    GLWebView.this.superDraw(glAttachedCanvas);
 //                }
 //            }).start();
+//            super.draw(canvas);
+
+//            canvas.drawText(System.currentTimeMillis()+"",getScrollX()+500,getScrollY()+500,paint);
+
+            glAttachedCanvas.clipRect(canvas.getClipBounds());
+            glAttachedCanvas.drawColor(Color.WHITE);
+
             superDraw(glAttachedCanvas);
             // notify the canvas is updated
             mViewToGLRenderer.onDrawViewEnd();
+            if(glSurfaceView!=null) glSurfaceView.requestRender();
         }
         else
         {

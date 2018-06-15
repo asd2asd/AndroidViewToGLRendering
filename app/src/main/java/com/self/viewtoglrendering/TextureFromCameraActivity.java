@@ -47,6 +47,9 @@ import com.self.viewtoglrendering.gles.WindowSurface;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListResourceBundle;
 
 /**
  * Direct the Camera preview to a GLES texture and manipulate it.
@@ -124,6 +127,9 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
     public NewGlWebView contentView;
 
+    private boolean recordFps;
+    private static int fpsCount;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,10 +186,11 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         super.onResume();
 
         mRenderThread = new RenderThread(mHandler);
-        mRenderThread.setContentView(contentView);
         mRenderThread.setName("TexFromCam Render");
         mRenderThread.start();
         mRenderThread.waitUntilReady();
+
+        mRenderThread.setContentView(contentView);
 
         RenderHandler rh = mRenderThread.getHandler();
         rh.sendZoomValue(mZoomBar.getProgress());
@@ -193,6 +200,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         if (sSurfaceHolder != null) {
             Log.d(TAG, "Sending previous surface");
             rh.sendSurfaceAvailable(sSurfaceHolder, false);
+
+
         } else {
             Log.d(TAG, "No previous surface");
         }
@@ -209,6 +218,26 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 //                        e.printStackTrace();
 //                    }
 //                    mRenderThread.onFrameAvailable(null);
+//                }
+//            }
+//        }).start();
+
+
+//        recordFps = false;
+//        recordFps = true;
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                while (recordFps)
+//                {
+//                    Log.e("fps",fpsCount+"");
+//                    fpsCount = 0;
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException e) {
+//                        break;
+//                    }
 //                }
 //            }
 //        }).start();
@@ -229,6 +258,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         }
         mRenderThread = null;
         Log.d(TAG, "onPause END");
+
+        recordFps = false;
     }
 
     @Override   // SurfaceHolder.Callback
@@ -244,6 +275,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             // Normal case -- render thread is running, tell it about the new surface.
             RenderHandler rh = mRenderThread.getHandler();
             rh.sendSurfaceAvailable(holder, true);
+
+
         } else {
             // Sometimes see this on 4.4.x N5: power off, power on, unlock, with device in
             // landscape and a lock screen that requires portrait.  The surface-created
@@ -502,15 +535,18 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
         private int mWindowSurfaceHeight;
 
         // Receives the output from the camera preview.
-        private SurfaceTexture mCameraTexture;
+//        private SurfaceTexture mCameraTexture;
 
         // Orthographic projection matrix.
         private float[] mDisplayProjectionMatrix = new float[16];
 
         private Texture2dProgram mTexProgram;
-        private final ScaledDrawable2d mRectDrawable =
-                new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
-        private final Sprite2d mRect = new Sprite2d(mRectDrawable);
+        private List<SurfaceTexture> mSurfaceTextureList = new ArrayList<>();
+        private List<ScaledDrawable2d> scaledDrawable2dList = new ArrayList();
+        private List<Sprite2d> mRectList = new ArrayList<>();
+//        private final ScaledDrawable2d mRectDrawable =
+//                new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
+//        private final Sprite2d mRect = new Sprite2d(mRectDrawable);
 
         private int mZoomPercent = DEFAULT_ZOOM_PERCENT;
         private int mSizePercent = DEFAULT_SIZE_PERCENT;
@@ -586,6 +622,21 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             return mHandler;
         }
 
+        public SurfaceTexture addRect() {
+
+            ScaledDrawable2d rectDrawable =
+                    new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
+            Sprite2d rect = new Sprite2d(rectDrawable);
+            int textureId = mTexProgram.createTextureObject();
+            SurfaceTexture cameraTexture = new SurfaceTexture(textureId);
+            rect.setTexture(textureId);
+
+            scaledDrawable2dList.add(rectDrawable);
+            mRectList.add(rect);
+            mSurfaceTextureList.add(cameraTexture);
+            return cameraTexture;
+        }
+
         /**
          * Handles the surface-created callback from SurfaceView.  Prepares GLES and the Surface.
          */
@@ -597,9 +648,13 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             // Create and configure the SurfaceTexture, which will receive frames from the
             // camera.  We set the textured rect's program to render from it.
             mTexProgram = new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT);
-            int textureId = mTexProgram.createTextureObject();
-            mCameraTexture = new SurfaceTexture(textureId);
-            mRect.setTexture(textureId);
+//            int textureId = mTexProgram.createTextureObject();
+//            mCameraTexture = new SurfaceTexture(textureId);
+//            mRect.setTexture(textureId);
+
+
+            mCamera.setOnFrameAvailableListener(this);
+            mCamera.setPreviewTexture(this.addRect());
 
             if (!newSurface) {
                 // This Surface was established on a previous run, so no surfaceChanged()
@@ -613,7 +668,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             }
 
 //            mCameraTexture.setOnFrameAvailableListener(this);
-            mCamera.setOnFrameAvailableListener(this);
+//            mCamera.setOnFrameAvailableListener(this);
         }
 
         /**
@@ -686,9 +741,12 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
             updateGeometry();
 
-            mCameraTexture.setDefaultBufferSize(width, height);
+            for(int i=0;i<mSurfaceTextureList.size();i++) {
+                mSurfaceTextureList.get(i).setDefaultBufferSize(width, height);
+            }
             // Ready to go, start the camera.
-                mCamera.setPreviewTexture(mCameraTexture);
+//                mCamera.setPreviewTexture(mCameraTexture);
+
         }
 
         /**
@@ -710,10 +768,12 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             int rotAngle = Math.round(360 * (mRotatePercent / 100.0f));
 
 //            mRect.setScale(newWidth, newHeight);
-            mRect.setScale(width, height);
-            mRect.setPosition(mPosX, mPosY);
-            mRect.setRotation(rotAngle);
-            mRectDrawable.setScale(zoomFactor);
+            for(int i=0;i<mRectList.size();i++) {
+                mRectList.get(i).setScale(width, height);
+                mRectList.get(i).setPosition(mPosX, mPosY);
+                mRectList.get(i).setRotation(rotAngle);
+                scaledDrawable2dList.get(i).setScale(zoomFactor);
+            }
 
             mMainHandler.sendRectSize(newWidth, newHeight);
             mMainHandler.sendZoomArea(Math.round(mCameraPreviewWidth * zoomFactor),
@@ -734,14 +794,19 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
          */
         private void frameAvailable() {
 
-            if(null==mCameraTexture)
-                return;
-            mCameraTexture.updateTexImage();
+            for(int i=0;i<mSurfaceTextureList.size();i++)
+            {
+                if (null == mSurfaceTextureList.get(i))
+                    return;
+                mSurfaceTextureList.get(i).updateTexImage();
+            }
 
 //            long startTime = System.currentTimeMillis();
             draw();
 //            long endTime = System.currentTimeMillis() - startTime;
 //            Log.e("during ",endTime+"");
+
+//            fpsCount++;
         }
 
         /**
@@ -757,7 +822,8 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
 //            Log.e("opengl","draw");
-            mRect.draw(mTexProgram, mDisplayProjectionMatrix);
+            for(int i=0;i<mRectList.size();i++)
+                mRectList.get(i).draw(mTexProgram, mDisplayProjectionMatrix);
             mWindowSurface.swapBuffers();
 //            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 //            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -768,7 +834,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
             long during = curTime - drawTime;
             drawTime = curTime;
 //            if(during>20)
-                Log.e("opengl draw",during+","+endTime);
+//                Log.e("opengl draw",during+","+endTime);
         }
 
         private void setZoom(int percent) {

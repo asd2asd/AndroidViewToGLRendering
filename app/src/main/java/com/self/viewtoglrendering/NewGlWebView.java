@@ -76,6 +76,8 @@ public class NewGlWebView extends WebView {
 
 //        Log.e("webview","draw");
 //        Log.e("draw",canvas.getHeight()+"");
+        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
+
 
         canResizeHeight = false;
         long startTime = System.currentTimeMillis();
@@ -89,7 +91,12 @@ public class NewGlWebView extends WebView {
         }
 
         long drawTimeStart = System.currentTimeMillis();
-//        super.onDraw(canvas);
+//        int state = canvas.save();
+//        canvas.translate(-getScrollX(), -getScrollY());
+////            canvas1.clipRect(0,0,1440,1440);
+//        canvas.drawColor(Color.WHITE);
+
+//        canvas.restoreToCount(state);
 //        canvas.translate(-getScrollX(), -getScrollY());
 //        canvas.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
         Canvas canvas1 = null;
@@ -99,21 +106,21 @@ public class NewGlWebView extends WebView {
             originHeight = canvas1.getHeight();
             int state = canvas1.save();
             canvas1.translate(-getScrollX(), -getScrollY());
-//            canvas1.clipRect(0,0,1440,1440);
+            canvas1.clipRect(canvas.getClipBounds());
             canvas1.drawColor(Color.WHITE);
             super.onDraw(canvas1);
             canvas1.restoreToCount(state);
 //            canvas1.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
             mSurface.unlockCanvasAndPost(canvas1);
-            if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
-
         }
+
+        super.onDraw(canvas);
         long endTime = System.currentTimeMillis() - startTime;
 
         long during = System.currentTimeMillis() - drawTime;
         drawTime = System.currentTimeMillis();
 //        if(during>20)
-        Log.e("webview draw during ",during+","+endTime);
+//        Log.e("webview draw during ",during+","+endTime);
 
 
 

@@ -117,6 +117,11 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
     private int viewWidth,viewHeight;
 
 
+    private boolean recordFps;
+    private int fpsCount;
+
+
+
 
     public CubeGLRenderer(Context context) {
         mContext = context;
@@ -430,11 +435,35 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
         mPointProgramHandle = ShaderHelper.createAndLinkProgram(pointVertexShaderHandle, pointFragmentShaderHandle,
                 new String[] {"a_Position"});
 
+
+        recordFps = false;
+        recordFps = true;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                while (recordFps)
+                {
+                Log.e("fps",fpsCount+"");
+                    fpsCount = 0;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }
+        }).start();
     }
+
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         super.onSurfaceChanged(gl, width, height);
+
+
+        recordFps = false;
+        recordFps = true;
 
         viewHeight = height;
         viewWidth = width;
@@ -537,7 +566,9 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        Log.e("opengl draw","0");
 
         long endTime = System.currentTimeMillis() - startTime;
-        if(endTime>10)Log.e("during ",endTime+"");
+//        if(endTime>10)Log.e("during ",endTime+"");
+
+        fpsCount++;
     }
 
     /**
@@ -631,4 +662,6 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
         }
         return true;
     }
+
+
 }

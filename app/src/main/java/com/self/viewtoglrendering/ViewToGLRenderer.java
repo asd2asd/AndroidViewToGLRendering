@@ -43,6 +43,11 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
         }
    }
 
+   public void updateTexImage()
+   {
+       mSurfaceTexture.updateTexImage();
+   }
+
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height){
         releaseSurface();
