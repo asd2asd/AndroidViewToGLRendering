@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+android:id="@+id/sliding_layout"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:gravity="bottom"
+sothree:umanoPanelHeight="68dp"
+sothree:umanoShadowHeight="4dp"
+tools:context="com.self.viewtoglrendering.Main3Activity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <com.self.viewtoglrendering.NewGlWebView
+            android:id="@+id/cube_webview2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </com.self.viewtoglrendering.NewGlWebView>
+
+        <com.self.viewtoglrendering.CubeSurfaceView
+            android:id="@+id/cube_surfaceView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <com.self.viewtoglrendering.NewGlWebView
+            android:id="@+id/cube_webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </com.self.viewtoglrendering.NewGlWebView>
+
+        <com.self.viewtoglrendering.CubeSurfaceView
+            android:id="@+id/cube_surfaceView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"/>
+
+    </RelativeLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>

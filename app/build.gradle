@@ -22,4 +22,5 @@ android {
 dependencies {
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.sothree.slidinguppanel:library:3.4.0'
 }
