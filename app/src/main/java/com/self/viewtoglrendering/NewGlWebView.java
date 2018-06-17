@@ -18,11 +18,11 @@ import android.webkit.WebView;
  * Created by jose on 2018/4/13.
  */
 
-public class NewGlWebView extends WebView {
+public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTextureView {
 
     private SurfaceTexture mSurfaceTexture;
     private Surface mSurface;
-    private OnFrameAvailableListener onFrameAvailableListener;
+    private SurfaceTexture.OnFrameAvailableListener onFrameAvailableListener;
     private OnScrollListener onScrollListener;
     private Paint paint;
 
@@ -43,6 +43,7 @@ public class NewGlWebView extends WebView {
     }
 
 
+    @Override
     public void setPreviewTexture(SurfaceTexture surfaceTexture)
     {
         releaseSurface();
@@ -113,7 +114,7 @@ public class NewGlWebView extends WebView {
             mSurface.unlockCanvasAndPost(canvas1);
         }
 
-        super.onDraw(canvas);
+//        super.onDraw(canvas);
 //        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         long endTime = System.currentTimeMillis() - startTime;
 
@@ -133,7 +134,7 @@ public class NewGlWebView extends WebView {
 
     }
 
-    public void setOnFrameAvailableListener(OnFrameAvailableListener listener)
+    public void setOnFrameAvailableListener(SurfaceTexture.OnFrameAvailableListener listener)
     {
         onFrameAvailableListener = listener;
     }
@@ -285,11 +286,6 @@ public class NewGlWebView extends WebView {
 
         void OnScrollUp(WebView webView,int oldt,int top);
         void OnScrollDown(WebView webView,int oldt,int top);
-    }
-
-    public interface OnFrameAvailableListener
-    {
-        void onFrameAvailable(SurfaceTexture surfaceTexture);
     }
 
 }

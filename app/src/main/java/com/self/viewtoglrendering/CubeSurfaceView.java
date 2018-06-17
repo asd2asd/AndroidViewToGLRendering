@@ -13,12 +13,9 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
-import com.self.viewtoglrendering.gles.Drawable2d;
 import com.self.viewtoglrendering.gles.EglCore;
 import com.self.viewtoglrendering.gles.GlUtil;
-import com.self.viewtoglrendering.gles.ScaledDrawable2d;
 import com.self.viewtoglrendering.gles.Sprite2d;
 import com.self.viewtoglrendering.gles.Texture2dProgram;
 import com.self.viewtoglrendering.gles.WindowSurface;
@@ -36,9 +33,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     private static final String TAG = "CubeSurfaceview";
 
-    private static final int DEFAULT_ZOOM_PERCENT = 0;      // 0-100
-    private static final int DEFAULT_SIZE_PERCENT = 50;     // 0-100
-    private static final int DEFAULT_ROTATE_PERCENT = 0;    // 0-100
+    private static final int DRAW_FRAME_DELAY = 1000/60;
 
 
 
@@ -47,7 +42,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     //
     // This becomes non-null after the surfaceCreated() callback is called, and gets set
     // to null when surfaceDestroyed() is called.
-    private static SurfaceHolder sSurfaceHolder;
+    private SurfaceHolder sSurfaceHolder;
 
     // Thread that handles rendering and controls the camera.  Started in onResume(),
     // stopped in onPause().
@@ -73,22 +68,22 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     {
         SurfaceHolder sh = getHolder();
         sh.setFormat(PixelFormat.TRANSLUCENT);
+        setZOrderOnTop(true);
         sh.addCallback(this);
     }
 
 
-    public void resume(View contentView) {
+    public void resume(int rectSize,CubeSurfaceEventListener listener) {
 
-        mRenderThread = new RenderThread();
+        mRenderThread = new RenderThread(rectSize,listener);
         mRenderThread.setName("TexFromCam Render");
         mRenderThread.start();
         mRenderThread.waitUntilReady();
 
-        mRenderThread.setContentView((NewGlWebView) contentView);
 
         RenderHandler rh = mRenderThread.getHandler();
 //        rh.sendZoomValue(mZoomBar.getProgress());
-//        rh.sendSizeValue(mSizeBar.getProgress());
+//        rh.sendDisplayAreaValue(mSizeBar.getProgress());
 //        rh.sendRotateValue(mRotateBar.getProgress());
 
         if (sSurfaceHolder != null) {
@@ -104,15 +99,9 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true)
-                {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if(null!=mRenderThread)mRenderThread.onFrameAvailable(null);
-                }
+                if(mRenderThread==null) return;
+                while (null==mRenderThread.getSurfaceTexture(0));
+                mRenderThread.onFrameAvailable(null);
             }
         }).start();
 
@@ -193,7 +182,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
      * Thread that handles all rendering and camera operations.
      */
     private static class RenderThread extends Thread implements
-            NewGlWebView.OnFrameAvailableListener {
+            SurfaceTexture.OnFrameAvailableListener {
         // Object must be created on render thread to get correct Looper, but is used from
         // UI thread, so we need to declare it volatile to ensure the UI thread sees a fully
         // constructed object.
@@ -205,8 +194,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
 //        private MainHandler mMainHandler;
 
-        private NewGlWebView mCamera;
-        private int mCameraPreviewWidth, mCameraPreviewHeight;
+//        private NewGlWebView mCamera;
+//        private int mCameraPreviewWidth, mCameraPreviewHeight;
 
         private EglCore mEglCore;
         private WindowSurface mWindowSurface;
@@ -220,17 +209,21 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         private float[] mDisplayProjectionMatrix = new float[16];
 
         private Texture2dProgram mTexProgram;
-        private List<SurfaceTexture> mSurfaceTextureList = new ArrayList<>();
-        private List<ScaledDrawable2d> scaledDrawable2dList = new ArrayList();
-        private List<Sprite2d> mRectList = new ArrayList<>();
-//        private final ScaledDrawable2d mRectDrawable =
-//                new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
-//        private final Sprite2d mRect = new Sprite2d(mRectDrawable);
+//        private List<SurfaceTexture> mSurfaceTextureList = new ArrayList<>();
+//        private List<ScaledDrawable2d> scaledDrawable2dList = new ArrayList();
+//        private List<Sprite2d> mRectList = new ArrayList<>();
+////        private final ScaledDrawable2d mRectDrawable =
+////                new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
+////        private final Sprite2d mRect = new Sprite2d(mRectDrawable);
+//
+//        private int mZoomPercent = DEFAULT_ZOOM_PERCENT;
+//        private int mSizePercent = DEFAULT_SIZE_PERCENT;
+//        private int mRotatePercent = DEFAULT_ROTATE_PERCENT;
+//        private float mPosX, mPosY;
+        private List<RectBean> mRectList;
 
-        private int mZoomPercent = DEFAULT_ZOOM_PERCENT;
-        private int mSizePercent = DEFAULT_SIZE_PERCENT;
-        private int mRotatePercent = DEFAULT_ROTATE_PERCENT;
-        private float mPosX, mPosY;
+        private CubeSurfaceEventListener surfaceEventListener;
+
 
 
         /**
@@ -240,6 +233,16 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //        public RenderThread(MainHandler handler) {
 //            mMainHandler = handler;
 //        }
+
+        public RenderThread(int rectSize,CubeSurfaceEventListener listener)
+        {
+            mRectList = new ArrayList<>();
+            for(int i=0;i<rectSize;i++)
+            {
+                initRect();
+            }
+            surfaceEventListener = listener;
+        }
 
         /**
          * Thread entry point.
@@ -301,19 +304,26 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             return mHandler;
         }
 
-        public SurfaceTexture addRect() {
+        private void initRect()
+        {
+            mRectList.add(new RectBean());
+        }
 
-            ScaledDrawable2d rectDrawable =
-                    new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
-            Sprite2d rect = new Sprite2d(rectDrawable);
+        private SurfaceTexture allocRect(RectBean rectBean) {
+
+
             int textureId = mTexProgram.createTextureObject();
             SurfaceTexture cameraTexture = new SurfaceTexture(textureId);
-            rect.setTexture(textureId);
+            rectBean.getRect().setTexture(textureId);
+            rectBean.setSurfaceTexture(cameraTexture);
 
-            scaledDrawable2dList.add(rectDrawable);
-            mRectList.add(rect);
-            mSurfaceTextureList.add(cameraTexture);
             return cameraTexture;
+        }
+
+        public SurfaceTexture getSurfaceTexture(int index)
+        {
+            if(index<0||index>=mRectList.size()) return null;
+            return mRectList.get(index).getSurfaceTexture();
         }
 
         /**
@@ -332,8 +342,12 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //            mRect.setTexture(textureId);
 
 
-            mCamera.setOnFrameAvailableListener(this);
-            mCamera.setPreviewTexture(this.addRect());
+            for(int i=0;i<mRectList.size();i++)
+            {
+                allocRect(mRectList.get(i));
+            }
+
+            surfaceEventListener.OnSurfaceAvaiable();
 
             if (!newSurface) {
                 // This Surface was established on a previous run, so no surfaceChanged()
@@ -405,8 +419,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         private void finishSurfaceSetup() {
             int width = mWindowSurfaceWidth;
             int height = mWindowSurfaceHeight;
-            Log.d(TAG, "finishSurfaceSetup size=" + width + "x" + height +
-                    " camera=" + mCameraPreviewWidth + "x" + mCameraPreviewHeight);
+//            Log.d(TAG, "finishSurfaceSetup size=" + width + "x" + height +
+//                    " camera=" + mCameraPreviewWidth + "x" + mCameraPreviewHeight);
 
             // Use full window.
             GLES20.glViewport(0, 0, width, height);
@@ -414,14 +428,17 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             // Simple orthographic projection, with (0,0) in lower-left corner.
             Matrix.orthoM(mDisplayProjectionMatrix, 0, 0, width, 0, height, -1, 1);
 
-            // Default position is center of screen.
-            mPosX = width / 2.0f;
-            mPosY = height / 2.0f;
+            // Default position is center of screen.'
+            for(int i=0;i<mRectList.size();i++) {
+                RectBean rectBean = mRectList.get(i);
+                rectBean.setPosX(width / 2.0f);
+                rectBean.setPosY(height / 2.0f);
+                updateGeometry(i);
+            }
 
-            updateGeometry();
 
-            for(int i=0;i<mSurfaceTextureList.size();i++) {
-                mSurfaceTextureList.get(i).setDefaultBufferSize(width, height);
+            for(int i=0;i<mRectList.size();i++) {
+                mRectList.get(i).getSurfaceTexture().setDefaultBufferSize(width, height);
             }
             // Ready to go, start the camera.
 //                mCamera.setPreviewTexture(mCameraTexture);
@@ -432,27 +449,32 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
          * Updates the geometry of mRect, based on the size of the window and the current
          * values set by the UI.
          */
-        private void updateGeometry() {
+        private void updateGeometry(int index) {
+            RectBean rectBean = mRectList.get(index);
             int width = mWindowSurfaceWidth;
             int height = mWindowSurfaceHeight;
 
-            int smallDim = Math.min(width, height);
+//            int smallDim = Math.min(width, height);
             // Max scale is a bit larger than the screen, so we can show over-size.
-            float scaled = smallDim * (mSizePercent / 100.0f) * 1.25f;
-            float cameraAspect = (float) mCameraPreviewWidth / mCameraPreviewHeight;
-            int newWidth = Math.round(scaled * cameraAspect);
-            int newHeight = Math.round(scaled);
+//            float scaled = smallDim * (mSizePercent / 100.0f) * 1.25f;
+//            float cameraAspect = (float) mCameraPreviewWidth / mCameraPreviewHeight;
+//            int newWidth = Math.round(scaled * cameraAspect);
+//            int newHeight = Math.round(scaled);
 
-            float zoomFactor = 1.0f - (mZoomPercent / 100.0f);
-            int rotAngle = Math.round(360 * (mRotatePercent / 100.0f));
+            float displayAreaFactor = 1.0f - (rectBean.getDisplayAreaPercent()/100.0f);
+            float zoomFactor = 1.0f - (rectBean.getZoomPercent() / 100.0f);
+            int rotAngle = Math.round(360 * (rectBean.getRotatePercent() / 100.0f));
 
-//            mRect.setScale(newWidth, newHeight);
-            for(int i=0;i<mRectList.size();i++) {
-                mRectList.get(i).setScale(width, height);
-                mRectList.get(i).setPosition(mPosX, mPosY);
-                mRectList.get(i).setRotation(rotAngle);
-                scaledDrawable2dList.get(i).setScale(zoomFactor);
-            }
+            float finalScale = (zoomFactor*displayAreaFactor);
+            float newWidth = width*finalScale;
+            float newHeight = height*finalScale;
+
+            Sprite2d rect = rectBean.getRect();
+            rect.setScale(newWidth,newHeight);
+            rect.setPosition(rectBean.getPosX(),rectBean.getPosY());
+            rect.setRotation(rotAngle);
+//            rectBean.getScaledDrawable2d().setScale(finalScale);
+
 
 //            mMainHandler.sendRectSize(newWidth, newHeight);
 //            mMainHandler.sendZoomArea(Math.round(mCameraPreviewWidth * zoomFactor),
@@ -473,11 +495,13 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
          */
         private void frameAvailable() {
 
-            for(int i=0;i<mSurfaceTextureList.size();i++)
+            long startTime = System.currentTimeMillis();
+            for(int i=0;i<mRectList.size();i++)
             {
-                if (null == mSurfaceTextureList.get(i))
+                SurfaceTexture surfaceTexture = mRectList.get(i).getSurfaceTexture();
+                if (null == surfaceTexture)
                     return;
-                mSurfaceTextureList.get(i).updateTexImage();
+                surfaceTexture.updateTexImage();
             }
 
 //            long startTime = System.currentTimeMillis();
@@ -486,6 +510,13 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //            Log.e("during ",endTime+"");
 
 //            fpsCount++;
+
+
+            int during = (int) (System.currentTimeMillis() - startTime);
+
+            int delay = DRAW_FRAME_DELAY - during;
+            if(delay<0) delay = 0;
+            mHandler.sendFrameAvailableDelayed(delay);
         }
 
         /**
@@ -503,7 +534,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
 //            Log.e("opengl","draw");
             for(int i=0;i<mRectList.size();i++)
-                mRectList.get(i).draw(mTexProgram, mDisplayProjectionMatrix);
+                mRectList.get(i).getRect().draw(mTexProgram, mDisplayProjectionMatrix);
             mWindowSurface.swapBuffers();
 //            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 //            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -517,25 +548,25 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //                Log.e("opengl draw",during+","+endTime);
         }
 
-        private void setZoom(int percent) {
-            mZoomPercent = percent;
-            updateGeometry();
+        private void setZoom(int index,int percent) {
+            mRectList.get(index).setZoomPercent(percent);
+            updateGeometry(index);
         }
 
-        private void setSize(int percent) {
-            mSizePercent = percent;
-            updateGeometry();
+        private void setDisplayArea(int index, int percent) {
+            mRectList.get(index).setDisplayAreaPercent(percent);
+            updateGeometry(index);
         }
 
-        private void setRotate(int percent) {
-            mRotatePercent = percent;
-            updateGeometry();
+        private void setRotate(int index,int percent) {
+            mRectList.get(index).setRotatePercent(percent);
+            updateGeometry(index);
         }
 
-        private void setPosition(int x, int y) {
-            mPosX = x;
-            mPosY = mWindowSurfaceHeight - y;   // GLES is upside-down
-            updateGeometry();
+        private void setPosition(int index,int x, int y) {
+            mRectList.get(index).setPosX(x);
+            mRectList.get(index).setPosY(mWindowSurfaceHeight - y);   // GLES is upside-down
+            updateGeometry(index);
         }
 
         /**
@@ -554,10 +585,15 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         }
 
 
-        public void setContentView(NewGlWebView contentView)
-        {
-            this.mCamera = contentView;
-        }
+//        public void setContentView(NewGlWebView contentView)
+//        {
+//            this.mCamera = contentView;
+//        }
+    }
+
+    public interface CubeSurfaceEventListener
+    {
+        void OnSurfaceAvaiable();
     }
 
 
@@ -574,7 +610,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         private static final int MSG_SHUTDOWN = 3;
         private static final int MSG_FRAME_AVAILABLE = 4;
         private static final int MSG_ZOOM_VALUE = 5;
-        private static final int MSG_SIZE_VALUE = 6;
+        private static final int MSG_DISPLAY_AREA_VALUE = 6;
         private static final int MSG_ROTATE_VALUE = 7;
         private static final int MSG_POSITION = 8;
         private static final int MSG_REDRAW = 9;
@@ -644,13 +680,18 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             sendMessage(obtainMessage(MSG_FRAME_AVAILABLE));
         }
 
+
+        public void sendFrameAvailableDelayed(int millSecond) {
+            sendMessageDelayed(obtainMessage(MSG_FRAME_AVAILABLE),millSecond);
+        }
+
         /**
          * Sends the "zoom value" message.  "progress" should be 0-100.
          * <p>
          * Call from UI thread.
          */
-        public void sendZoomValue(int progress) {
-            sendMessage(obtainMessage(MSG_ZOOM_VALUE, progress, 0));
+        public void sendZoomValue(int index,int progress) {
+            sendMessage(obtainMessage(MSG_ZOOM_VALUE, index, progress));
         }
 
         /**
@@ -658,8 +699,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
          * <p>
          * Call from UI thread.
          */
-        public void sendSizeValue(int progress) {
-            sendMessage(obtainMessage(MSG_SIZE_VALUE, progress, 0));
+        public void sendDisplayAreaValue(int index, int progress) {
+            sendMessage(obtainMessage(MSG_DISPLAY_AREA_VALUE,index, progress));
         }
 
         /**
@@ -667,8 +708,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
          * <p>
          * Call from UI thread.
          */
-        public void sendRotateValue(int progress) {
-            sendMessage(obtainMessage(MSG_ROTATE_VALUE, progress, 0));
+        public void sendRotateValue(int index,int progress) {
+            sendMessage(obtainMessage(MSG_ROTATE_VALUE,index, progress));
         }
 
         /**
@@ -676,8 +717,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
          * <p>
          * Call from UI thread.
          */
-        public void sendPosition(int x, int y) {
-            sendMessage(obtainMessage(MSG_POSITION, x, y));
+        public void sendPosition(int index,int x, int y) {
+            sendMessage(obtainMessage(MSG_POSITION,index, x, y));
         }
 
         /**
@@ -717,16 +758,16 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                     renderThread.frameAvailable();
                     break;
                 case MSG_ZOOM_VALUE:
-                    renderThread.setZoom(msg.arg1);
+                    renderThread.setZoom(msg.arg1,msg.arg2);
                     break;
-                case MSG_SIZE_VALUE:
-                    renderThread.setSize(msg.arg1);
+                case MSG_DISPLAY_AREA_VALUE:
+                    renderThread.setDisplayArea(msg.arg1,msg.arg2);
                     break;
                 case MSG_ROTATE_VALUE:
-                    renderThread.setRotate(msg.arg1);
+                    renderThread.setRotate(msg.arg1,msg.arg2);
                     break;
                 case MSG_POSITION:
-                    renderThread.setPosition(msg.arg1, msg.arg2);
+                    renderThread.setPosition(msg.arg1, msg.arg2,(int)msg.obj);
                     break;
                 case MSG_REDRAW:
                     renderThread.draw();
@@ -735,5 +776,39 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                     throw new RuntimeException("unknown message " + what);
             }
         }
+    }
+
+    public SurfaceTexture.OnFrameAvailableListener getFrameAvailableListener()
+    {
+        return mRenderThread;
+    }
+
+    public SurfaceTexture getRectSurfaceTexture(int index)
+    {
+        return mRenderThread.getSurfaceTexture(index);
+    }
+
+    public void setPosition(int index,int posX,int posY)
+    {
+        mRenderThread.getHandler().sendPosition(index,posX,posY);
+    }
+
+
+    public void setZoom(int index,int percent) {
+        mRenderThread.getHandler().sendZoomValue(index,percent);
+    }
+
+    public void setDisplayArea(int index, int percent) {
+        mRenderThread.getHandler().sendDisplayAreaValue(index,percent);
+    }
+
+    public void setRotate(int index,int percent) {
+        mRenderThread.getHandler().sendRotateValue(index,percent);
+    }
+
+
+    public interface DrawTextureView
+    {
+        void setPreviewTexture(SurfaceTexture surfaceTexture);
     }
 }

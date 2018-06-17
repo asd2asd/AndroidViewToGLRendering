@@ -514,7 +514,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
      * Thread that handles all rendering and camera operations.
      */
     private static class RenderThread extends Thread implements
-            NewGlWebView.OnFrameAvailableListener {
+            SurfaceTexture.OnFrameAvailableListener {
         // Object must be created on render thread to get correct Looper, but is used from
         // UI thread, so we need to declare it volatile to ensure the UI thread sees a fully
         // constructed object.

@@ -21,14 +21,20 @@ tools:context="com.self.viewtoglrendering.Main3Activity">
 
 
         <com.self.viewtoglrendering.NewGlWebView
+            android:id="@+id/cube_webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </com.self.viewtoglrendering.NewGlWebView>
+        <com.self.viewtoglrendering.NewGlWebView
             android:id="@+id/cube_webview2"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
         </com.self.viewtoglrendering.NewGlWebView>
 
-        <com.self.viewtoglrendering.CubeSurfaceView
-            android:id="@+id/cube_surfaceView2"
+        <com.self.viewtoglrendering.TextureViewPager
+            android:id="@+id/texture_view_pager"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -43,21 +49,21 @@ tools:context="com.self.viewtoglrendering.Main3Activity">
         android:layout_height="match_parent">
 
 
-        <com.self.viewtoglrendering.NewGlWebView
-            android:id="@+id/cube_webview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <!--<com.self.viewtoglrendering.NewGlWebView-->
+            <!--android:id="@+id/cube_webview"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent">-->
 
-        </com.self.viewtoglrendering.NewGlWebView>
+        <!--</com.self.viewtoglrendering.NewGlWebView>-->
 
-        <com.self.viewtoglrendering.CubeSurfaceView
-            android:id="@+id/cube_surfaceView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"/>
+        <!--<com.self.viewtoglrendering.CubeSurfaceView-->
+            <!--android:id="@+id/cube_surfaceView"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:layout_alignParentLeft="true"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_alignParentTop="true"/>-->
 
     </RelativeLayout>
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>

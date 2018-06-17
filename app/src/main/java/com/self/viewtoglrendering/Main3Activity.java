@@ -4,51 +4,70 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 
-public class Main3Activity extends Activity {
+public class Main3Activity extends Activity implements View.OnTouchListener {
 
-    CubeSurfaceView cubeSurfaceView;
     NewGlWebView glWebView;
-    CubeSurfaceView cubeSurfaceView2;
     NewGlWebView glWebView2;
+    TextureViewPager textureViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
-        cubeSurfaceView = (CubeSurfaceView) findViewById(R.id.cube_surfaceView);
+//        cubeSurfaceView = (CubeSurfaceView) findViewById(R.id.cube_surfaceView);
+//        glWebView = (NewGlWebView) findViewById(R.id.cube_webview);
+//        cubeSurfaceView.init();
+//        glWebView.setWebChromeClient(new WebChromeClient());
+//        glWebView.setWebViewClient(new WebViewClient());
+//        glWebView.getSettings().setJavaScriptEnabled(true);
+//        glWebView.loadUrl("https://hao.360.cn");
+
+
+        textureViewPager = (TextureViewPager) findViewById(R.id.texture_view_pager);
+
         glWebView = (NewGlWebView) findViewById(R.id.cube_webview);
-        cubeSurfaceView.init();
+        glWebView2 = (NewGlWebView) findViewById(R.id.cube_webview2);
+
+
         glWebView.setWebChromeClient(new WebChromeClient());
         glWebView.setWebViewClient(new WebViewClient());
         glWebView.getSettings().setJavaScriptEnabled(true);
         glWebView.loadUrl("https://hao.360.cn");
 
-
-        cubeSurfaceView2 = (CubeSurfaceView) findViewById(R.id.cube_surfaceView2);
-        glWebView2 = (NewGlWebView) findViewById(R.id.cube_webview2);
-        cubeSurfaceView2.init();
         glWebView2.setWebChromeClient(new WebChromeClient());
         glWebView2.setWebViewClient(new WebViewClient());
         glWebView2.getSettings().setJavaScriptEnabled(true);
         glWebView2.loadUrl("https://m.hupu.com");
+//        glWebView2.setOnTouchListener(this);
+
+        textureViewPager.addTextureDrawView(glWebView);
+        textureViewPager.addTextureDrawView(glWebView2);
+
     }
 
 
     @Override
     protected void onPause() {
         super.onPause();
-        cubeSurfaceView.pause();
-        cubeSurfaceView2.pause();
+//        cubeSurfaceView.pause();
+        textureViewPager.pause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        cubeSurfaceView.resume(glWebView);
-        cubeSurfaceView2.resume(glWebView);
+//        cubeSurfaceView.resume(1, new CubeSurfaceView.CubeSurfaceEventListener() {
+//            @Override
+//            public void OnSurfaceAvaiable() {
+//                glWebView.setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(0));
+//            }
+//        });
+        textureViewPager.resume();
     }
 
     @Override
@@ -63,6 +82,26 @@ public class Main3Activity extends Activity {
             }
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+
+
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_DOWN:
+//                cubeSurfaceView2.setPosition(0,(int)x,(int)y);
+                break;
+            default:
+                break;
+        }
+
+        return true;
     }
 }
 
