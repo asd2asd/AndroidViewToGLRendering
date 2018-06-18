@@ -9,7 +9,7 @@ import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 
-public class Main3Activity extends Activity implements View.OnTouchListener {
+public class Main3Activity extends Activity{
 
     NewGlWebView glWebView;
     NewGlWebView glWebView2;
@@ -87,21 +87,5 @@ public class Main3Activity extends Activity implements View.OnTouchListener {
 
 
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_DOWN:
-//                cubeSurfaceView2.setPosition(0,(int)x,(int)y);
-                break;
-            default:
-                break;
-        }
-
-        return true;
-    }
 }
 
