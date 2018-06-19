@@ -25,6 +25,7 @@ public class RectBean {
     private int displayAreaPercent = DEFAULT_DISPLAY_AREA_PERCENT;
     private int rotatePercent = DEFAULT_ROTATE_PERCENT;
     private float posX, posY;
+    private boolean enable;
 
     public RectBean()
     {
@@ -95,5 +96,13 @@ public class RectBean {
 
     public void setPosY(float posY) {
         this.posY = posY;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }

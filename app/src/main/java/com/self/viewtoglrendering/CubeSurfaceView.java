@@ -68,7 +68,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     {
         SurfaceHolder sh = getHolder();
         sh.setFormat(PixelFormat.TRANSLUCENT);
-        setZOrderOnTop(true);
+//        setZOrderOnTop(true);
         sh.addCallback(this);
     }
 
@@ -512,6 +512,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             long startTime = System.currentTimeMillis();
             for(int i=0;i<mRectList.size();i++)
             {
+                if(!mRectList.get(i).isEnable())
+                    continue;
                 SurfaceTexture surfaceTexture = mRectList.get(i).getSurfaceTexture();
                 if (null == surfaceTexture)
                     return;
@@ -519,6 +521,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             }
 
 //            long startTime = System.currentTimeMillis();
+
+            surfaceEventListener.BeforeDrawFrame();
             draw();
 //            long endTime = System.currentTimeMillis() - startTime;
 //            Log.e("during ",endTime+"");
@@ -547,8 +551,11 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
 //            Log.e("opengl","draw");
-            for(int i=0;i<mRectList.size();i++)
-                mRectList.get(i).getRect().draw(mTexProgram, mDisplayProjectionMatrix);
+            for(int i=0;i<mRectList.size();i++) {
+                RectBean rectBean = mRectList.get(i);
+                if(rectBean.isEnable())
+                    rectBean.getRect().draw(mTexProgram, mDisplayProjectionMatrix);
+            }
             mWindowSurface.swapBuffers();
 //            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 //            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -608,6 +615,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     public interface CubeSurfaceEventListener
     {
         void OnSurfaceAvaiable();
+        void BeforeDrawFrame();
     }
 
 
@@ -839,5 +847,15 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     public void subtractRect()
     {
         mRenderThread.subtractRect();
+    }
+
+    public boolean isRectEnable(int index)
+    {
+        return mRenderThread.getRectList().get(index).isEnable();
+    }
+
+    public void setRectEnable(int index,boolean enable)
+    {
+        mRenderThread.getRectList().get(index).setEnable(enable);
     }
 }

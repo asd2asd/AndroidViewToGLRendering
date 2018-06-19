@@ -46,6 +46,7 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
     @Override
     public void setPreviewTexture(SurfaceTexture surfaceTexture)
     {
+        if(mSurfaceTexture==surfaceTexture) return;
         releaseSurface();
         mSurfaceTexture = surfaceTexture;
         mSurface = new Surface(mSurfaceTexture);

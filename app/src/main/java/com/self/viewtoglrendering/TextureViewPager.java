@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,10 +21,49 @@ import java.util.List;
 public class TextureViewPager extends LinearLayout implements View.OnTouchListener,CubeSurfaceView.CubeSurfaceEventListener {
 
     private CubeSurfaceView cubeSurfaceView;
-    private int currentScrollX;
     private int zoom;
     private int displayArea;
     private int textureViewCount;
+    /**
+     * 当前页面的下标，从0开始
+     */
+    private int mCurItem;
+    /**
+     * 按下屏幕的X轴的坐标
+     */
+    private int firstX;
+    /**
+     * 手势处理探测器两边
+     */
+    private GestureDetector mDetector;
+
+    /**
+     * 动画辅助类变量，用Scroller代替更佳
+     */
+    private ScrollDistance mScrollDistance;
+
+    private IAnimationStrategy animationStrategy;
+    /**
+     * 简单控制页面变换回调的变量
+     */
+    private OnPageChangeListener onPageChangeListener = null;
+    /**
+     * 接口以实现回调，可用于实现滑动指示条的功能
+     */
+    public interface OnPageChangeListener {
+        /**
+         * 页面变换是回调这个方法
+         *
+         * @param position 处于屏幕的Fragment的标号，从0开始
+         */
+        void onPageSelected(int position);
+    }
+
+
+
+    /**
+     * 适配器变量
+     */
     private PagerAdapter adapter;
 
     public TextureViewPager(Context context) {
@@ -46,10 +86,13 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         cubeSurfaceView = new CubeSurfaceView(context);
         cubeSurfaceView.init();
         this.addView(cubeSurfaceView);
+
+        mDetector = new GestureDetector(getContext(), new GestureListener());
         cubeSurfaceView.setOnTouchListener(this);
-        zoom = 50;
+        zoom = 10;
         displayArea = 10;
-        currentScrollX = 0;
+//        currentScrollX = 0;
+        animationStrategy = new ScrollAnimaitonStrategy();
     }
 
     public void setAdapter(PagerAdapter adapter)
@@ -81,7 +124,8 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         this.zoom = zoom;
 
         int itemWidth = getItemWidth();
-        textureViewCount = (int) Math.ceil(1.0f * cubeSurfaceView.getWidth() / itemWidth) + 1;
+        int surfaceWidth = cubeSurfaceView.getWidth();
+        textureViewCount = (int) Math.ceil(1.0f * surfaceWidth / itemWidth) + 1;
 
         int offset = textureViewCount - cubeSurfaceView.getRectCount();
         if (offset > 0)
@@ -100,6 +144,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         for (int i = 0; i < textureViewCount; i++) {
             cubeSurfaceView.setZoom(i, zoom);
         }
+
     }
 
     public int getDisplayArea() {
@@ -117,32 +162,47 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     public void setScrollX(int scrollX)
     {
-        this.currentScrollX = scrollX;
+        int itemWidth = getItemWidth();
+        int surfaceWidth = cubeSurfaceView.getWidth();
+
+        int minScrollValue = -(surfaceWidth - itemWidth)/2;
+        int maxScrollValue = itemWidth * (adapter.getCount()-1) + minScrollValue;
+        if(scrollX<minScrollValue||scrollX>maxScrollValue) return;
+
+//        this.currentScrollX = scrollX;
+
+    }
+
+    private void applyScrollX()
+    {
+        int itemWidth = getItemWidth();
+        int currentScrollX = getScrollXCorrect();
         int firstVisibleItemIndex = getFirstVisibleItemIndex();
         int lastVisibleItemIndex = getLastVisibleItemIndex();
-        int itemWidth = getItemWidth();
         int startX = itemWidth/2;
-        if(scrollX<0) startX += scrollX;
-        else startX += scrollX%itemWidth;
+        if(currentScrollX<0) startX -= currentScrollX;
+        else startX -= currentScrollX%itemWidth;
+        int textureViewStartIndex = firstVisibleItemIndex%textureViewCount;
+        for(int i=0,j=firstVisibleItemIndex,textureIndex = textureViewStartIndex;i<textureViewCount;i++,j++) {
+            if (textureIndex >= textureViewCount) textureIndex = 0;
+            if (j <= lastVisibleItemIndex) {
+                ((CubeSurfaceView.DrawTextureView) adapter.instantiateItem(this, j)).
+                        setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(textureIndex));
+                cubeSurfaceView.setRectEnable(textureIndex, true);
+                cubeSurfaceView.setPosition(textureIndex, itemWidth * i + startX,
+                        cubeSurfaceView.getHeight() / 2);
+            } else {
+                cubeSurfaceView.setRectEnable(textureIndex, false);
+            }
 
-        for(int i=firstVisibleItemIndex,texIndex =0;i<=lastVisibleItemIndex;i++,texIndex++)
-        {
-            ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).
-                setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(texIndex));
+            textureIndex++;
+            if (textureIndex == textureViewStartIndex) return;
         }
-
-        for(int i=0,j=firstVisibleItemIndex;i<textureViewCount;i++,j++)
-        {
-
-            cubeSurfaceView.setPosition(i,itemWidth*i+startX,
-                    cubeSurfaceView.getHeight()/2);
-        }
-
     }
 
     public int getScrollXCorrect()
     {
-        return currentScrollX;
+        return (int) animationStrategy.getX();
     }
 
     private int getItemWidth()
@@ -152,12 +212,12 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     private int getFirstVisibleItemIndex()
     {
-        return findItemIndexAtScrollX(currentScrollX);
+        return findItemIndexAtScrollX(getScrollXCorrect());
     }
 
     private int getLastVisibleItemIndex()
     {
-        return findItemIndexAtScrollX(currentScrollX + cubeSurfaceView.getWidth());
+        return findItemIndexAtScrollX(getScrollXCorrect() + cubeSurfaceView.getWidth());
     }
 
     private int findItemIndexAtScrollX(int scrollX)
@@ -171,20 +231,46 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-
+        // 使用工具来解析触摸事件
+        boolean result = mDetector.onTouchEvent(event);
+        //事件被处理就直接返回
+        if (result) return result;
         switch (event.getAction()) {
             case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_DOWN:
-                setScrollX((int)x);
-//                cubeSurfaceView2.setPosition(0,(int)x,(int)y);
                 break;
-            default:
+            case MotionEvent.ACTION_UP:
+                int position;
+                int secondX = (int) event.getX();
+                if (secondX - firstX > getItemWidth() / 2) {
+                    position = mCurItem - 1;
+                } else if (firstX - secondX > getItemWidth() / 2) {
+                    position = mCurItem + 1;
+                } else {
+                    position = mCurItem;
+                }
+
+                switchToItem(position);
+
+                break;
+            case MotionEvent.ACTION_DOWN:
+                firstX = (int) event.getX();
                 break;
         }
-
         return true;
+    }
+
+    @Override
+    public void scrollTo(int x, int y) {
+
+        int distanceX = (int) (x - animationStrategy.getX());
+        animationStrategy.update(distanceX);
+//        setScrollX(x);
+    }
+
+    @Override
+    public void scrollBy(int x, int y) {
+//        setScrollX(currentScrollX+x);
+        animationStrategy.update(x);
     }
 
     @Override
@@ -192,7 +278,14 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
         setZoom(zoom);
         setDisplayArea(displayArea);
-        setScrollX(currentScrollX);
+//        setScrollX(getScrollXCorrect());
+        applyScrollX();
+    }
+
+    @Override
+    public void BeforeDrawFrame() {
+        animationStrategy.compute();
+        applyScrollX();
     }
 
 
@@ -268,8 +361,8 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
             super.onScroll(e1, e2, distanceX, distanceY);
             int x = getScrollXCorrect();
             //第一页不能向右滑动，最后一页不能向左滑动，直接返回
-            if (x < 0 || x > getItemWidth() * (adapter.getCount() - 1))
-                return false;
+//            if (x < 0 || x > getItemWidth() * (adapter.getCount() - 1))
+//                return false;
             scrollBy((int) distanceX, 0);
 
             //返回false可以继续处理后续交互，比如滑动超过一半距离
@@ -287,16 +380,51 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
          * */
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-//            int position;
-//            if (e1.getX() < e2.getX()) {
-//                position = mCurItem - 1;
-//            } else {
-//                position = mCurItem + 1;
-//            }
-//
-//            switchToItem(position);
+            int position;
+            if (e1.getX() < e2.getX()) {
+                position = mCurItem - 1;
+            } else {
+                position = mCurItem + 1;
+            }
+
+            switchToItem(position);
 
             return true;
+        }
+    }
+
+
+
+
+    public void switchToItem(int position)
+    {
+
+        position = position < 0 ? 0 :
+                (position >= adapter.getCount() ? adapter.getCount() - 1 : position);
+        if (position != mCurItem) {
+            mCurItem = position;
+            //页面变换，在设置变换监听的时候回调该函数
+            if (onPageChangeListener != null) {
+                onPageChangeListener.onPageSelected(mCurItem);
+            }
+        }
+        mScrollDistance = new ScrollDistance(getScrollXCorrect(),
+                mCurItem * getItemWidth() - getScrollXCorrect());
+        computeViewScroll();
+
+
+    }
+
+
+    public void computeViewScroll() {
+        //调用invalidate()会回调此方法，在这里实现动画效果
+        if (mScrollDistance != null && !mScrollDistance.computeScrollOffset()) {
+            int newX = (int) mScrollDistance.currentX;
+            Log.e("acjiji", "computeScroll" + newX);
+            scrollTo(newX, 0);
+            // 再次刷新
+//            refresh();
+            computeViewScroll();
         }
     }
 
