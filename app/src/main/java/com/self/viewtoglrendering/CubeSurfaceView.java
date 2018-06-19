@@ -73,9 +73,9 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }
 
 
-    public void resume(int rectSize,CubeSurfaceEventListener listener) {
+    public void resume(CubeSurfaceEventListener listener) {
 
-        mRenderThread = new RenderThread(rectSize,listener);
+        mRenderThread = new RenderThread(listener);
         mRenderThread.setName("TexFromCam Render");
         mRenderThread.start();
         mRenderThread.waitUntilReady();
@@ -234,13 +234,9 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //            mMainHandler = handler;
 //        }
 
-        public RenderThread(int rectSize,CubeSurfaceEventListener listener)
+        public RenderThread(CubeSurfaceEventListener listener)
         {
             mRectList = new ArrayList<>();
-            for(int i=0;i<rectSize;i++)
-            {
-                initRect();
-            }
             surfaceEventListener = listener;
         }
 
@@ -302,6 +298,24 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
          */
         public RenderHandler getHandler() {
             return mHandler;
+        }
+
+        public List<RectBean> getRectList()
+        {
+            return mRectList;
+        }
+
+        public void addRect()
+        {
+            initRect();
+            if(null!=mTexProgram)
+                allocRect(mRectList.get(mRectList.size()-1));
+        }
+
+        public void subtractRect()
+        {
+            if(mRectList.size()<=1) return;
+            mRectList.remove(mRectList.size() -1);
         }
 
         private void initRect()
@@ -806,9 +820,24 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         mRenderThread.getHandler().sendRotateValue(index,percent);
     }
 
+    public int getRectCount()
+    {
+        return mRenderThread.getRectList().size();
+    }
+
 
     public interface DrawTextureView
     {
         void setPreviewTexture(SurfaceTexture surfaceTexture);
+    }
+
+    public void addRect()
+    {
+        mRenderThread.addRect();
+    }
+
+    public void subtractRect()
+    {
+        mRenderThread.subtractRect();
     }
 }

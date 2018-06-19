@@ -45,8 +45,11 @@ public class Main3Activity extends Activity{
         glWebView2.loadUrl("https://m.hupu.com");
 //        glWebView2.setOnTouchListener(this);
 
-        textureViewPager.addTextureDrawView(glWebView);
-        textureViewPager.addTextureDrawView(glWebView2);
+        TextureViewPagerAdapter adapter = new TextureViewPagerAdapter();
+        adapter.addView(glWebView);
+        adapter.addView(glWebView2);
+
+        textureViewPager.setAdapter(adapter);
 
     }
 

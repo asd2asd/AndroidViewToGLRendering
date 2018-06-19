@@ -17,13 +17,13 @@ import java.util.List;
  * Created by justs on 2018/6/17.
  */
 
-public class TextureViewPager extends LinearLayout implements View.OnTouchListener  {
+public class TextureViewPager extends LinearLayout implements View.OnTouchListener,CubeSurfaceView.CubeSurfaceEventListener {
 
     private CubeSurfaceView cubeSurfaceView;
-    private List<CubeSurfaceView.DrawTextureView> drawTextureViewList;
     private int currentScrollX;
     private int zoom;
     private int displayArea;
+    private int textureViewCount;
     private PagerAdapter adapter;
 
     public TextureViewPager(Context context) {
@@ -45,12 +45,16 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     {
         cubeSurfaceView = new CubeSurfaceView(context);
         cubeSurfaceView.init();
-        drawTextureViewList = new ArrayList<>();
         this.addView(cubeSurfaceView);
         cubeSurfaceView.setOnTouchListener(this);
-        setZoom(50);
-        setDisplayArea(10);
-        setScrollX(0);
+        zoom = 50;
+        displayArea = 10;
+        currentScrollX = 0;
+    }
+
+    public void setAdapter(PagerAdapter adapter)
+    {
+        this.adapter = adapter;
     }
 
     public void pause()
@@ -60,21 +64,14 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     public void resume()
     {
-        cubeSurfaceView.resume(drawTextureViewList.size(), new CubeSurfaceView.CubeSurfaceEventListener() {
-            @Override
-            public void OnSurfaceAvaiable() {
-                for(int i=0;i<drawTextureViewList.size();i++)
-                {
-                    drawTextureViewList.get(i).setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(i));
-                }
-                setZoom(zoom);
-                setDisplayArea(displayArea);
-                setScrollX(currentScrollX);
-            }
-        });
-
+        cubeSurfaceView.resume(this);
     }
 
+
+    private int getItemCount()
+    {
+        return adapter.getCount();
+    }
 
     public int getZoom() {
         return zoom;
@@ -83,9 +80,25 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     public void setZoom(int zoom) {
         this.zoom = zoom;
 
-        for(int i=0;i<drawTextureViewList.size();i++)
-        {
-            cubeSurfaceView.setZoom(i,zoom);
+        int itemWidth = getItemWidth();
+        textureViewCount = (int) Math.ceil(1.0f * cubeSurfaceView.getWidth() / itemWidth) + 1;
+
+        int offset = textureViewCount - cubeSurfaceView.getRectCount();
+        if (offset > 0)
+            for (int i = 0; i < offset; i++) {
+                cubeSurfaceView.addRect();
+
+//            drawTextureViewList.get(i).setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(i));
+            }
+        else if(offset<0) {
+            for (int i = 0; i < -offset; i++) {
+                cubeSurfaceView.subtractRect();
+            }
+
+        }
+
+        for (int i = 0; i < textureViewCount; i++) {
+            cubeSurfaceView.setZoom(i, zoom);
         }
     }
 
@@ -96,7 +109,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     public void setDisplayArea(int displayArea) {
         this.displayArea = displayArea;
 
-        for(int i=0;i<drawTextureViewList.size();i++)
+        for(int i=0;i<textureViewCount;i++)
         {
             cubeSurfaceView.setDisplayArea(i,displayArea);
         }
@@ -105,12 +118,26 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     public void setScrollX(int scrollX)
     {
         this.currentScrollX = scrollX;
-        int width = getItemWidth();
-        int startX = width/2 + scrollX;
-        for(int i=0;i<drawTextureViewList.size();i++)
+        int firstVisibleItemIndex = getFirstVisibleItemIndex();
+        int lastVisibleItemIndex = getLastVisibleItemIndex();
+        int itemWidth = getItemWidth();
+        int startX = itemWidth/2;
+        if(scrollX<0) startX += scrollX;
+        else startX += scrollX%itemWidth;
+
+        for(int i=firstVisibleItemIndex,texIndex =0;i<=lastVisibleItemIndex;i++,texIndex++)
         {
-            cubeSurfaceView.setPosition(i,width*i+startX,cubeSurfaceView.getHeight()/2);
+            ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).
+                setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(texIndex));
         }
+
+        for(int i=0,j=firstVisibleItemIndex;i<textureViewCount;i++,j++)
+        {
+
+            cubeSurfaceView.setPosition(i,itemWidth*i+startX,
+                    cubeSurfaceView.getHeight()/2);
+        }
+
     }
 
     public int getScrollXCorrect()
@@ -123,11 +150,24 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         return (int) (cubeSurfaceView.getWidth()*(100 - zoom)/100.0f);
     }
 
-    public void addTextureDrawView(CubeSurfaceView.DrawTextureView drawTextureView)
+    private int getFirstVisibleItemIndex()
     {
-        drawTextureViewList.add(drawTextureView);
+        return findItemIndexAtScrollX(currentScrollX);
     }
 
+    private int getLastVisibleItemIndex()
+    {
+        return findItemIndexAtScrollX(currentScrollX + cubeSurfaceView.getWidth());
+    }
+
+    private int findItemIndexAtScrollX(int scrollX)
+    {
+        int adapterCount = adapter.getCount();
+        int index = scrollX/getItemWidth();
+        if(index<0) index = 0;
+        else if(index>=adapterCount) index = adapterCount - 1;
+        return index;
+    }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -145,6 +185,14 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         }
 
         return true;
+    }
+
+    @Override
+    public void OnSurfaceAvaiable() {
+
+        setZoom(zoom);
+        setDisplayArea(displayArea);
+        setScrollX(currentScrollX);
     }
 
 
@@ -239,14 +287,14 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
          * */
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            int position;
-            if (e1.getX() < e2.getX()) {
-                position = mCurItem - 1;
-            } else {
-                position = mCurItem + 1;
-            }
-
-            switchToItem(position);
+//            int position;
+//            if (e1.getX() < e2.getX()) {
+//                position = mCurItem - 1;
+//            } else {
+//                position = mCurItem + 1;
+//            }
+//
+//            switchToItem(position);
 
             return true;
         }
