@@ -1,6 +1,7 @@
 package com.self.viewtoglrendering;
 
 import android.graphics.SurfaceTexture;
+import android.view.Surface;
 
 import com.self.viewtoglrendering.gles.Drawable2d;
 import com.self.viewtoglrendering.gles.ScaledDrawable2d;
@@ -19,6 +20,7 @@ public class RectBean {
 
 
     private SurfaceTexture surfaceTexture;
+    private Surface surface;
     private ScaledDrawable2d scaledDrawable2d;
     private Sprite2d rect;
     private int zoomPercent = DEFAULT_ZOOM_PERCENT;
@@ -26,12 +28,30 @@ public class RectBean {
     private int rotatePercent = DEFAULT_ROTATE_PERCENT;
     private float posX, posY;
     private boolean enable;
+    private int drawViewIndex;
 
     public RectBean()
     {
         scaledDrawable2d =
                 new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
         rect = new Sprite2d(scaledDrawable2d);
+        drawViewIndex = -1;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        release();
+        super.finalize();
+    }
+
+    public void release()
+    {
+        if(null!=surface)
+            surface.release();
+        if(null!=surfaceTexture) {
+            surfaceTexture.release();
+            surfaceTexture.releaseTexImage();
+        }
     }
 
     public SurfaceTexture getSurfaceTexture() {
@@ -39,7 +59,12 @@ public class RectBean {
     }
 
     public void setSurfaceTexture(SurfaceTexture surfaceTexture) {
-        this.surfaceTexture = surfaceTexture;
+        if(this.surfaceTexture!=surfaceTexture)
+        {
+            release();
+            this.surfaceTexture = surfaceTexture;
+            setSurface(new Surface(surfaceTexture));
+        }
     }
 
     public ScaledDrawable2d getScaledDrawable2d() {
@@ -104,5 +129,21 @@ public class RectBean {
 
     public void setEnable(boolean enable) {
         this.enable = enable;
+    }
+
+    public int getDrawViewIndex() {
+        return drawViewIndex;
+    }
+
+    public void setDrawViewIndex(int drawViewIndex) {
+        this.drawViewIndex = drawViewIndex;
+    }
+
+    public Surface getSurface() {
+        return surface;
+    }
+
+    private void setSurface(Surface surface) {
+        this.surface = surface;
     }
 }

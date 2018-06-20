@@ -20,11 +20,10 @@ import android.webkit.WebView;
 
 public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTextureView {
 
-    private SurfaceTexture mSurfaceTexture;
     private Surface mSurface;
     private SurfaceTexture.OnFrameAvailableListener onFrameAvailableListener;
     private OnScrollListener onScrollListener;
-    private Paint paint;
+    private boolean drawOpenGlTexture;
 
     public NewGlWebView(Context context) {
         super(context);
@@ -44,27 +43,45 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
 
     @Override
-    public void setPreviewTexture(SurfaceTexture surfaceTexture)
+    public boolean updatePreviewSurface(Surface surface)
     {
-        if(mSurfaceTexture==surfaceTexture) return;
-        releaseSurface();
-        mSurfaceTexture = surfaceTexture;
-        mSurface = new Surface(mSurfaceTexture);
-        paint = new Paint();
-    }
-
-
-    public void releaseSurface(){
-        if(mSurface != null){
-            mSurface.release();
+        if(surface==null)
+        {
+            drawOpenGlTexture = false;
+            if(mSurface!=null)
+            synchronized (mSurface) {
+                mSurface = null;
+            }
         }
-//        if(mSurfaceTexture != null){
-//            mSurfaceTexture.release();
-//        }
-        mSurface = null;
-        mSurfaceTexture = null;
-
+        else
+        {
+            drawOpenGlTexture = true;
+            if(mSurface==surface) return false;
+            mSurface = surface;
+        }
+        return true;
     }
+
+    @Override
+    public void drawOpenGlTexture(boolean draw) {
+        drawOpenGlTexture = draw;
+    }
+
+
+//    public void releaseSurface(){
+//        if(mSurface==null) return;
+//        synchronized (mSurface) {
+//            if (mSurface != null) {
+//                mSurface.release();
+//            }
+////        if(mSurfaceTexture != null){
+////            mSurfaceTexture.release();
+////        }
+//            mSurface = null;
+//            mSurfaceTexture = null;
+//        }
+//
+//    }
 
 //    @Override
 //    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -101,18 +118,20 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 //        canvas.translate(-getScrollX(), -getScrollY());
 //        canvas.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
         Canvas canvas1 = null;
-        if(mSurface!=null)
+        if(drawOpenGlTexture&&mSurface!=null)
         {
-            canvas1 = mSurface.lockHardwareCanvas();
-            originHeight = canvas1.getHeight();
-            int state = canvas1.save();
-            canvas1.translate(-getScrollX(), -getScrollY());
-            canvas1.clipRect(canvas.getClipBounds());
-            canvas1.drawColor(Color.WHITE);
-            super.onDraw(canvas1);
-            canvas1.restoreToCount(state);
+            synchronized (mSurface) {
+                canvas1 = mSurface.lockHardwareCanvas();
+                originHeight = canvas1.getHeight();
+                int state = canvas1.save();
+                canvas1.translate(-getScrollX(), -getScrollY());
+                canvas1.clipRect(canvas.getClipBounds());
+                canvas1.drawColor(Color.WHITE);
+                super.onDraw(canvas1);
+                canvas1.restoreToCount(state);
 //            canvas1.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
-            mSurface.unlockCanvasAndPost(canvas1);
+                mSurface.unlockCanvasAndPost(canvas1);
+            }
         }
 
 //        super.onDraw(canvas);

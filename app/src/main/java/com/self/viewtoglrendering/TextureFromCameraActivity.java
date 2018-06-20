@@ -17,7 +17,6 @@ package com.self.viewtoglrendering;/*
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
@@ -26,16 +25,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
-import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.self.viewtoglrendering.gles.Drawable2d;
 import com.self.viewtoglrendering.gles.EglCore;
@@ -45,11 +40,9 @@ import com.self.viewtoglrendering.gles.Sprite2d;
 import com.self.viewtoglrendering.gles.Texture2dProgram;
 import com.self.viewtoglrendering.gles.WindowSurface;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListResourceBundle;
 
 /**
  * Direct the Camera preview to a GLES texture and manipulate it.
@@ -654,7 +647,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
 
 
             mCamera.setOnFrameAvailableListener(this);
-            mCamera.setPreviewTexture(this.addRect());
+//            mCamera.updatePreviewSurface(this.addRect());
 
             if (!newSurface) {
                 // This Surface was established on a previous run, so no surfaceChanged()
@@ -745,7 +738,7 @@ public class TextureFromCameraActivity extends Activity implements SurfaceHolder
                 mSurfaceTextureList.get(i).setDefaultBufferSize(width, height);
             }
             // Ready to go, start the camera.
-//                mCamera.setPreviewTexture(mCameraTexture);
+//                mCamera.updatePreviewSurface(mCameraTexture);
 
         }
 

@@ -100,7 +100,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             @Override
             public void run() {
                 if(mRenderThread==null) return;
-                while (null==mRenderThread.getSurfaceTexture(0));
+                while (null==mRenderThread.getSurface(0));
                 mRenderThread.onFrameAvailable(null);
             }
         }).start();
@@ -334,10 +334,10 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             return cameraTexture;
         }
 
-        public SurfaceTexture getSurfaceTexture(int index)
+        public Surface getSurface(int index)
         {
             if(index<0||index>=mRectList.size()) return null;
-            return mRectList.get(index).getSurfaceTexture();
+            return mRectList.get(index).getSurface();
         }
 
         /**
@@ -455,7 +455,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                 mRectList.get(i).getSurfaceTexture().setDefaultBufferSize(width, height);
             }
             // Ready to go, start the camera.
-//                mCamera.setPreviewTexture(mCameraTexture);
+//                mCamera.updatePreviewSurface(mCameraTexture);
 
         }
 
@@ -805,9 +805,9 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         return mRenderThread;
     }
 
-    public SurfaceTexture getRectSurfaceTexture(int index)
+    public Surface getRectSurface(int index)
     {
-        return mRenderThread.getSurfaceTexture(index);
+        return mRenderThread.getSurface(index);
     }
 
     public void setPosition(int index,int posX,int posY)
@@ -836,7 +836,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     public interface DrawTextureView
     {
-        void setPreviewTexture(SurfaceTexture surfaceTexture);
+        boolean updatePreviewSurface(Surface surface);
+        void drawOpenGlTexture(boolean draw);
     }
 
     public void addRect()
@@ -857,5 +858,15 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     public void setRectEnable(int index,boolean enable)
     {
         mRenderThread.getRectList().get(index).setEnable(enable);
+    }
+
+    public void updateDrawViewIndex(int rectIndex,int drawviewIndex)
+    {
+        mRenderThread.getRectList().get(rectIndex).setDrawViewIndex(drawviewIndex);
+    }
+
+    public int getDrawViewIndex(int rectIndex)
+    {
+        return mRenderThread.getRectList().get(rectIndex).getDrawViewIndex();
     }
 }

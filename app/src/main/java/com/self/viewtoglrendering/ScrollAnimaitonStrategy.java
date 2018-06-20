@@ -67,7 +67,7 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
      * @param limitDistance 最大允许的滑动距离
      */
     @Override
-    public void update(float velocityX,int limitDistance)
+    public void updateFling(float velocityX,int limitDistance)
     {
 
         limitDistance = Math.abs(limitDistance);
@@ -79,7 +79,7 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
         shift = (velocityX>=0?1:-1) *shift;
 
 
-        Log.e("scroll",this.cyclePeriod+","+shift);
+//        Log.e("scroll",this.cyclePeriod+","+shift);
         if(this.cyclePeriod<=0) this.cyclePeriod = 1;
         start();
     }
@@ -91,6 +91,16 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
         start();
     }
 
+    @Override
+    public void updateSwitchItem(float velocityX, int distance) {
+
+        float absV = (float) Math.sqrt(Math.abs(distance)*2*DECELERATION);
+        this.velocityX = (distance>=0?1:-1) * absV;
+        cyclePeriod = (int) (absV / DECELERATION);
+        shift = distance;
+        start();
+    }
+
     public void start() {
         startTime = System.currentTimeMillis();
         startX = (int) currentX;
@@ -98,7 +108,7 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
         transEnd = false;
 
 
-        Log.e("anim","start");
+//        Log.e("anim","start");
     }
 
     /**
@@ -131,12 +141,22 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
                         (absV * intervalTime - DECELERATION * intervalTime * intervalTime / 2));
 
             }
-            if (Math.abs(dist) >= Math.abs(shift)) {
+//            Log.e("asd","shift:"+shift+","+dist+"");
+            boolean isEnd = false;
+            if(intervalTime>=cyclePeriod)
+            {
+                isEnd = true;
+            }
+            else if (Math.abs(dist) >= Math.abs(shift)) {
+                isEnd = true;
+            }
+            if(isEnd)
+            {
                 dist = shift;
                 if (!transEnd) {
-                    Log.e("ratio", "trans end");
+//                    Log.e("ratio", "trans end");
                     transEnd = true;
-                    Log.e("change", transEnd ? "success" : "not");
+//                    Log.e("change", transEnd ? "success" : "not");
 //                animationSurfaceView.onTransEnd(startX + shift);
                 }
             }

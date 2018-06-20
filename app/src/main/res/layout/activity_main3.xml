@@ -20,19 +20,11 @@ tools:context="com.self.viewtoglrendering.Main3Activity">
         android:layout_height="match_parent">
 
 
-        <com.self.viewtoglrendering.NewGlWebView
-            android:id="@+id/cube_webview"
+        <RelativeLayout
+            android:id="@+id/main3_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
-        </com.self.viewtoglrendering.NewGlWebView>
-        <com.self.viewtoglrendering.NewGlWebView
-            android:id="@+id/cube_webview2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </com.self.viewtoglrendering.NewGlWebView>
-
+        </RelativeLayout>
         <com.self.viewtoglrendering.TextureViewPager
             android:id="@+id/texture_view_pager"
             android:layout_width="wrap_content"
