@@ -68,7 +68,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     {
         SurfaceHolder sh = getHolder();
         sh.setFormat(PixelFormat.TRANSLUCENT);
-//        setZOrderOnTop(true);
+        setZOrderOnTop(true);
         sh.addCallback(this);
     }
 

@@ -18,6 +18,7 @@ public interface IAnimationStrategy {
 
     void cancel();
 
-    void update(int shift);
+    void update(float velocity,int limitDistance);
+    void update(int shift,int cyclePeriod);
 
 }

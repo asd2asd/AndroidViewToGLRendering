@@ -92,7 +92,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         zoom = 10;
         displayArea = 10;
 //        currentScrollX = 0;
-        animationStrategy = new ScrollAnimaitonStrategy();
+        animationStrategy = new ScrollAnimaitonStrategy(0,0);
     }
 
     public void setAdapter(PagerAdapter adapter)
@@ -160,17 +160,14 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         }
     }
 
-    public void setScrollX(int scrollX)
+    private int getMinScrollX()
     {
-        int itemWidth = getItemWidth();
-        int surfaceWidth = cubeSurfaceView.getWidth();
+        return  -(cubeSurfaceView.getWidth() - getItemWidth())/2;
+    }
 
-        int minScrollValue = -(surfaceWidth - itemWidth)/2;
-        int maxScrollValue = itemWidth * (adapter.getCount()-1) + minScrollValue;
-        if(scrollX<minScrollValue||scrollX>maxScrollValue) return;
-
-//        this.currentScrollX = scrollX;
-
+    private int getMaxScrollX()
+    {
+        return getItemWidth() * (adapter.getCount()-1) + getMinScrollX();
     }
 
     private void applyScrollX()
@@ -190,7 +187,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
                         setPreviewTexture(cubeSurfaceView.getRectSurfaceTexture(textureIndex));
                 cubeSurfaceView.setRectEnable(textureIndex, true);
                 cubeSurfaceView.setPosition(textureIndex, itemWidth * i + startX,
-                        cubeSurfaceView.getHeight() / 2);
+                        cubeSurfaceView.getHeight()/2);
             } else {
                 cubeSurfaceView.setRectEnable(textureIndex, false);
             }
@@ -262,15 +259,31 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     @Override
     public void scrollTo(int x, int y) {
 
+        int minScrollX = getMinScrollX();
+        int maxScrollX = getMaxScrollX();
+        if(x<minScrollX) x = minScrollX;
+        else if(x>maxScrollX) x = maxScrollX;
         int distanceX = (int) (x - animationStrategy.getX());
-        animationStrategy.update(distanceX);
-//        setScrollX(x);
+        animationStrategy.update(distanceX,1);
     }
 
     @Override
     public void scrollBy(int x, int y) {
 //        setScrollX(currentScrollX+x);
-        animationStrategy.update(x);
+        scrollTo((int) (x + animationStrategy.getX()),y);
+    }
+
+    /**
+     * 惯性滑行
+     * @param velocityX 手松开是瞬时速度
+     */
+
+    public void flingTo(float velocityX)
+    {
+        int limit = velocityX>=0?getMaxScrollX():getMinScrollX();
+        limit = (int) (limit - animationStrategy.getX());
+
+        animationStrategy.update(velocityX,limit);
     }
 
     @Override
@@ -388,6 +401,8 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
             }
 
             switchToItem(position);
+//            flingTo(- velocityX/1000);
+
 
             return true;
         }
@@ -399,6 +414,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     public void switchToItem(int position)
     {
 
+
         position = position < 0 ? 0 :
                 (position >= adapter.getCount() ? adapter.getCount() - 1 : position);
         if (position != mCurItem) {
@@ -408,9 +424,18 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
                 onPageChangeListener.onPageSelected(mCurItem);
             }
         }
-        mScrollDistance = new ScrollDistance(getScrollXCorrect(),
-                mCurItem * getItemWidth() - getScrollXCorrect());
-        computeViewScroll();
+
+        int itemWidth = getItemWidth();
+        int sufaceWidth = cubeSurfaceView.getWidth();
+        int itemOffset = (sufaceWidth - itemWidth)/2;
+        int newScrollX = position*itemWidth-itemOffset;
+//        int scrollDistance = (int) (newScrollX - animationStrategy.getX());
+        scrollTo(newScrollX,0);
+
+
+//        mScrollDistance = new ScrollDistance(getScrollXCorrect(),
+//                mCurItem * getItemWidth() - getScrollXCorrect());
+//        computeViewScroll();
 
 
     }

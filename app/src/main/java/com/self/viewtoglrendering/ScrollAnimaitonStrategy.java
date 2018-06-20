@@ -7,6 +7,7 @@ import android.util.Log;
  */
 
 public class ScrollAnimaitonStrategy implements IAnimationStrategy {
+    private static final float DECELERATION = 0.01f;
     /**
      * 起始X坐标
      */
@@ -37,6 +38,11 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
     private boolean doing;
 
     /**
+     * 瞬时加速度
+     */
+    private float velocityX;
+
+    /**
      * 进行动画展示的view
      */
 //    private AnimationSurfaceView animationSurfaceView;
@@ -50,18 +56,38 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
 //        this.cyclePeriod = cyclePeriod;
 //        initParams();
 //    }
-    public ScrollAnimaitonStrategy()
+    public ScrollAnimaitonStrategy(int x,int y)
     {
-        initParams();
+        initParams(x,y);
+    }
+
+    /**
+     * 开始滑动动画
+     * @param velocityX 瞬时速度
+     * @param limitDistance 最大允许的滑动距离
+     */
+    @Override
+    public void update(float velocityX,int limitDistance)
+    {
+
+        limitDistance = Math.abs(limitDistance);
+        float absV = Math.abs(velocityX);
+        this.velocityX = velocityX;
+        cyclePeriod = (int) (absV / DECELERATION);
+        shift = (int) (absV*absV/(2*DECELERATION));
+        if(shift>limitDistance) shift = limitDistance;
+        shift = (velocityX>=0?1:-1) *shift;
+
+
+        Log.e("scroll",this.cyclePeriod+","+shift);
+        if(this.cyclePeriod<=0) this.cyclePeriod = 1;
+        start();
     }
 
     @Override
-    public void update(int shift)
-    {
+    public void update(int shift, int cyclePeriod) {
+        this.cyclePeriod = cyclePeriod;
         this.shift = shift;
-        this.cyclePeriod = Math.abs(shift)/500;
-        Log.e("scroll",this.cyclePeriod+","+shift);
-        if(this.cyclePeriod<=0) this.cyclePeriod = 1;
         start();
     }
 
@@ -78,37 +104,63 @@ public class ScrollAnimaitonStrategy implements IAnimationStrategy {
     /**
      * 设置起始位置坐标
      */
-    private void initParams() {
+    private void initParams(int x,int y) {
 //        int[] position = new int[2];
 //        animationSurfaceView.getLocationInWindow(position);
 //        this.startX = position[0];
 //        this.startY = position[1];
-        startX = 0;
-        startY = 0;
+        startX = x;
+        startY = y;
+        transEnd = true;
     }
+
 
     /**
      * 根据当前时间计算小球的X/Y坐标。
      */
     public void compute() {
+        if(transEnd) return;
         long intervalTime = (System.currentTimeMillis() - startTime);
-        float ratio = (float)intervalTime / cyclePeriod;
-        if(ratio>=1.0f)
-        {
-            ratio = 1.0f;
-            if(!transEnd)
-            {
-                Log.e("ratio","trans end");
-                transEnd = true;
-                Log.e("change",transEnd?"success":"not");
-//                animationSurfaceView.onTransEnd(startX + shift);
+        int dist;
+        if(cyclePeriod>0) {
+            if (cyclePeriod == 1) {
+                dist = shift;
+            } else {
+                float absV = Math.abs(velocityX);
+                dist = (int)((velocityX>=0?1:-1)*
+                        (absV * intervalTime - DECELERATION * intervalTime * intervalTime / 2));
+
             }
+            if (Math.abs(dist) >= Math.abs(shift)) {
+                dist = shift;
+                if (!transEnd) {
+                    Log.e("ratio", "trans end");
+                    transEnd = true;
+                    Log.e("change", transEnd ? "success" : "not");
+//                animationSurfaceView.onTransEnd(startX + shift);
+                }
+            }
+            doing = true;
+            currentX = startX + dist;
         }
 
-        doing = true;
-        int x = (int) (shift * ratio);
-
-        currentX = startX + x;
+//        float ratio = (float)intervalTime / cyclePeriod;
+//        if(ratio>=1.0f)
+//        {
+//            ratio = 1.0f;
+//            if(!transEnd)
+//            {
+//                Log.e("ratio","trans end");
+//                transEnd = true;
+//                Log.e("change",transEnd?"success":"not");
+////                animationSurfaceView.onTransEnd(startX + shift);
+//            }
+//        }
+//
+//        doing = true;
+//        int x = (int) (shift * ratio);
+//
+//        currentX = startX + x;
     }
 
 //    public void compute() {
