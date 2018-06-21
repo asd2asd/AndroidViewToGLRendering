@@ -62,8 +62,8 @@ public class Main3Activity extends Activity{
         mainContainer.addView(glWebView7);
         mainContainer.addView(glWebView8);
 
-        glWebView.loadUrl("https://hao.360.cn");
-        glWebView2.loadUrl("https://m.hupu.com");
+        glWebView.loadUrl("https://m.hupu.com");
+        glWebView2.loadUrl("https://hao.360.cn");
         glWebView3.loadUrl("https://m.smzdm.com");
         glWebView4.loadUrl("https://m.zhibo8.cc");
         glWebView5.loadUrl("https://www.hi-pda.com");

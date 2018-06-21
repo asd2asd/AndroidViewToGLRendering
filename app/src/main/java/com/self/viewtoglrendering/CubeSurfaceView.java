@@ -326,10 +326,18 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         private SurfaceTexture allocRect(RectBean rectBean) {
 
 
+            if(null!=rectBean.getSurfaceTexture()) return rectBean.getSurfaceTexture();
             int textureId = mTexProgram.createTextureObject();
             SurfaceTexture cameraTexture = new SurfaceTexture(textureId);
+            cameraTexture.setDefaultBufferSize(mWindowSurface.getWidth()/2,mWindowSurface.getHeight()/2);
             rectBean.getRect().setTexture(textureId);
             rectBean.setSurfaceTexture(cameraTexture);
+//            cameraTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
+//                @Override
+//                public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+//                    Log.e("t","t");
+//                }
+//            });
 
             return cameraTexture;
         }
@@ -452,9 +460,9 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             }
 
 
-            for(int i=0;i<mRectList.size();i++) {
-                mRectList.get(i).getSurfaceTexture().setDefaultBufferSize(width, height);
-            }
+//            for(int i=0;i<mRectList.size();i++) {
+//                mRectList.get(i).getSurfaceTexture().setDefaultBufferSize(width/4, height/4);
+//            }
             // Ready to go, start the camera.
 //                mCamera.updatePreviewSurface(mCameraTexture);
 
@@ -489,7 +497,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             rect.setPosition(rectBean.getPosX(),rectBean.getPosY());
             rect.setRotation(rotAngle);
 
-            rectBean.getSurfaceTexture().setDefaultBufferSize((int)newWidth, (int)newHeight);
+//            rectBean.getSurfaceTexture().setDefaultBufferSize((int)newWidth, (int)newHeight);
 //            rectBean.getScaledDrawable2d().setScale(finalScale);
 
 

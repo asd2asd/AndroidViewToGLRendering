@@ -40,7 +40,7 @@ public class RectBean {
 
     @Override
     protected void finalize() throws Throwable {
-        release();
+//        release();
         super.finalize();
     }
 

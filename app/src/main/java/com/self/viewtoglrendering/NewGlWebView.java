@@ -130,7 +130,8 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 //        canvas.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
 
 
-//        super.onDraw(canvas);
+//        drawTexture(canvas.getClipBounds());
+        super.onDraw(canvas);
 //        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
         long endTime = System.currentTimeMillis() - startTime;
 
@@ -139,7 +140,6 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 //        if(during>20)
 //        Log.e("webview draw during ",during+","+endTime);
 
-        drawTexture(canvas.getClipBounds());
 
 //        if(
 ////                during<30&&
