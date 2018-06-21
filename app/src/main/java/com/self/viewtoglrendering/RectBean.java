@@ -50,7 +50,7 @@ public class RectBean {
             surface.release();
         if(null!=surfaceTexture) {
             surfaceTexture.release();
-            surfaceTexture.releaseTexImage();
+//            surfaceTexture.releaseTexImage();
         }
     }
 

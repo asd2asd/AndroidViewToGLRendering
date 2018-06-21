@@ -79,7 +79,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
         mDetector = new GestureDetector(getContext(), new GestureListener());
         cubeSurfaceView.setOnTouchListener(this);
-        zoom = 50;
+        zoom = 0;
         displayArea = 10;
 //        currentScrollX = 0;
         animationStrategy = new ScrollAnimaitonStrategy(0,0);
@@ -103,6 +103,10 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     public void pause()
     {
+        for(int i=0;i<adapter.getCount();i++)
+        {
+            ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).updatePreviewSurface(null);
+        }
         cubeSurfaceView.pause();
     }
 
@@ -198,7 +202,6 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 //                    if(oldDrawViewIndex>=0)
 //                        ((CubeSurfaceView.DrawTextureView) adapter.instantiateItem(this, oldDrawViewIndex)).
 //                                updatePreviewSurface(null);
-                    ((NewGlWebView) adapter.instantiateItem(this, j)).postInvalidate();
                     ((CubeSurfaceView.DrawTextureView) adapter.instantiateItem(this, j)).
                             updatePreviewSurface(cubeSurfaceView.getRectSurface(textureIndex));
                     cubeSurfaceView.updateDrawViewIndex(textureIndex,j);

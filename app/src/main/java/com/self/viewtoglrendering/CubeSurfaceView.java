@@ -422,6 +422,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             // In practice this never appears to be called -- the activity is always paused
             // before the surface is destroyed.  In theory it could be called though.
             Log.d(TAG, "RenderThread surfaceDestroyed");
+            mRectList.clear();
             releaseGl();
         }
 
@@ -487,6 +488,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             rect.setScale(newWidth,newHeight);
             rect.setPosition(rectBean.getPosX(),rectBean.getPosY());
             rect.setRotation(rotAngle);
+
+            rectBean.getSurfaceTexture().setDefaultBufferSize((int)newWidth, (int)newHeight);
 //            rectBean.getScaledDrawable2d().setScale(finalScale);
 
 
@@ -836,7 +839,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     public interface DrawTextureView
     {
-        boolean updatePreviewSurface(Surface surface);
+        boolean updatePreviewSurface(final Surface surface);
         void drawOpenGlTexture(boolean draw);
     }
 

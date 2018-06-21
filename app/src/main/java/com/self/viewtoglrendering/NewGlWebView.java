@@ -3,6 +3,7 @@ package com.self.viewtoglrendering;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
@@ -43,22 +44,32 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
 
     @Override
-    public boolean updatePreviewSurface(Surface surface)
+    public boolean updatePreviewSurface(final Surface surface)
     {
-        if(surface==null)
-        {
-            drawOpenGlTexture = false;
-            if(mSurface!=null)
-            synchronized (mSurface) {
-                mSurface = null;
+        BrowserHandler.getInstance().handlerPost(new Runnable() {
+            @Override
+            public void run() {
+
+                if(surface==null)
+                {
+                    drawOpenGlTexture = false;
+//            if(mSurface!=null)
+//            synchronized (mSurface)
+                    {
+                        mSurface = null;
+                    }
+                }
+                else
+                {
+                    drawOpenGlTexture = true;
+                    if(mSurface!=surface) {
+                        mSurface = surface;
+
+                        drawTexture(null);
+                    }
+                }
             }
-        }
-        else
-        {
-            drawOpenGlTexture = true;
-            if(mSurface==surface) return false;
-            mSurface = surface;
-        }
+        });
         return true;
     }
 
@@ -117,22 +128,7 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 //        canvas.restoreToCount(state);
 //        canvas.translate(-getScrollX(), -getScrollY());
 //        canvas.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
-        Canvas canvas1 = null;
-        if(drawOpenGlTexture&&mSurface!=null)
-        {
-            synchronized (mSurface) {
-                canvas1 = mSurface.lockHardwareCanvas();
-                originHeight = canvas1.getHeight();
-                int state = canvas1.save();
-                canvas1.translate(-getScrollX(), -getScrollY());
-                canvas1.clipRect(canvas.getClipBounds());
-                canvas1.drawColor(Color.WHITE);
-                super.onDraw(canvas1);
-                canvas1.restoreToCount(state);
-//            canvas1.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
-                mSurface.unlockCanvasAndPost(canvas1);
-            }
-        }
+
 
 //        super.onDraw(canvas);
 //        if(null!=onFrameAvailableListener) onFrameAvailableListener.onFrameAvailable(mSurfaceTexture);
@@ -143,7 +139,7 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 //        if(during>20)
 //        Log.e("webview draw during ",during+","+endTime);
 
-
+        drawTexture(canvas.getClipBounds());
 
 //        if(
 ////                during<30&&
@@ -154,11 +150,37 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
     }
 
+    private void drawTexture(Rect rect)
+    {
+        Canvas canvas1 = null;
+        if(drawOpenGlTexture&&mSurface!=null)
+        {
+            canvas1 = mSurface.lockHardwareCanvas();
+            originHeight = canvas1.getHeight();
+//            int state = canvas1.save();
+
+            float xScale = canvas1.getWidth() / (float)this.getWidth();
+            canvas1.scale(xScale, xScale);
+            canvas1.translate(-getScrollX(), -getScrollY());
+            if(null!=rect)canvas1.clipRect(rect);
+            canvas1.drawColor(Color.WHITE);
+            super.onDraw(canvas1);
+//            canvas1.restoreToCount(state);
+//            canvas1.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
+            mSurface.unlockCanvasAndPost(canvas1);
+        }
+    }
+
     public void setOnFrameAvailableListener(SurfaceTexture.OnFrameAvailableListener listener)
     {
         onFrameAvailableListener = listener;
     }
 
+    @Override
+    public void onPause() {
+        updatePreviewSurface(null);
+        super.onPause();
+    }
 
     public void setOnScrollListener(OnScrollListener listener)
     {

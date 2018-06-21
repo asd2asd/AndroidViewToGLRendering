@@ -14,10 +14,12 @@ public class Main3Activity extends Activity{
 
     TextureViewPager textureViewPager;
     RelativeLayout mainContainer;
+    RelativeLayout textureViewContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        BrowserHandler.getInstance().init();
         setContentView(R.layout.activity_main3);
 //        cubeSurfaceView = (CubeSurfaceView) findViewById(R.id.cube_surfaceView);
 //        glWebView = (NewGlWebView) findViewById(R.id.cube_webview);
@@ -28,8 +30,10 @@ public class Main3Activity extends Activity{
 //        glWebView.loadUrl("https://hao.360.cn");
 
 
-        textureViewPager = (TextureViewPager) findViewById(R.id.texture_view_pager);
+        textureViewPager = new TextureViewPager(this);
         mainContainer = (RelativeLayout)findViewById(R.id.main3_container);
+        textureViewContainer = (RelativeLayout)findViewById(R.id.textview_container);
+        textureViewContainer.addView(textureViewPager);
 
         NewGlWebView glWebView = new NewGlWebView(this);
         webviewInit(glWebView);
