@@ -48,6 +48,21 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
        mSurfaceTexture.updateTexImage();
    }
 
+   public void releaseTexImage()
+   {
+       mSurfaceTexture.releaseTexImage();
+   }
+
+   public void detachGl()
+   {
+       mSurfaceTexture.detachFromGLContext();
+   }
+
+   public void attachGl()
+   {
+       mSurfaceTexture.attachToGLContext(mGlSurfaceTexture);
+   }
+
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height){
         releaseSurface();
@@ -57,8 +72,9 @@ public class ViewToGLRenderer implements GLSurfaceView.Renderer {
             //It's a clue class for rendering an android view to gl level
             mSurfaceTexture = new SurfaceTexture(mGlSurfaceTexture);
 //            mSurfaceTexture.setDefaultBufferSize(mTextureWidth, mTextureHeight);
-            mSurfaceTexture.setDefaultBufferSize(width, height);
+            mSurfaceTexture.setDefaultBufferSize(width/4, height/4);
             mSurface = new Surface(mSurfaceTexture);
+            mSurfaceTexture.detachFromGLContext();
         }
 
     }

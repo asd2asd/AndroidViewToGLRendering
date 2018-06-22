@@ -105,8 +105,8 @@ public class GLWebView extends WebView implements GLRenderable{
         final Canvas glAttachedCanvas = mViewToGLRenderer.onDrawViewBegin();
         if(glAttachedCanvas != null) {
             //translate canvas to reflect view scrolling
-//            float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
-//            glAttachedCanvas.scale(xScale, xScale);
+            float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
+            glAttachedCanvas.scale(xScale, xScale);
             glAttachedCanvas.translate(-getScrollX(), -getScrollY());
 
             //draw the view to provided canvas

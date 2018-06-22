@@ -487,10 +487,15 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
     }
 
+    private  int tt = 0;
     @Override
     public void onDrawFrame(GL10 gl) {
         long startTime = System.currentTimeMillis();
-        super.onDrawFrame(gl);
+        if(tt<=500)
+        {
+            attachGl();
+            super.onDrawFrame(gl);
+        }
         // GL Draw code onwards
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -569,6 +574,10 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        if(endTime>10)Log.e("during ",endTime+"");
 
         fpsCount++;
+
+//        releaseTexImage();
+        if(tt<=500)detachGl();
+        tt++;
     }
 
     /**
