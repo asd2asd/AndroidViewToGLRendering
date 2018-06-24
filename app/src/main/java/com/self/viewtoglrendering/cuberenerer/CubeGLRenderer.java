@@ -487,15 +487,11 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
     }
 
-    private  int tt = 0;
     @Override
     public void onDrawFrame(GL10 gl) {
         long startTime = System.currentTimeMillis();
-        if(tt<=500)
-        {
-            attachGl();
-            super.onDrawFrame(gl);
-        }
+        attachGl();
+        super.onDrawFrame(gl);
         // GL Draw code onwards
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -504,7 +500,7 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 //        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
 
 
-        for(int i=0;i<2;i++)
+        for (int i = 0; i < 1; i++)
 
         {
 
@@ -523,7 +519,7 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
             mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
 
 
-            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,  getGLSurfaceTexture());
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, getGLSurfaceTexture());
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glUniform1i(mTextureUniformHandle, 0);
 
@@ -555,9 +551,9 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
             Matrix.setIdentityM(mModelMatrix, 0);
 //            Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);
 //        Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 1.0f, 1.0f, 0.0f);
-            Matrix.translateM(mModelMatrix,0,
-                    (float)(touchOffsetX+ i*viewWidth)/viewWidth,
-                    0.0f,0.0f);
+            Matrix.translateM(mModelMatrix, 0,
+                    (float) (-viewWidth/2+touchOffsetX + i * viewWidth) / viewWidth,
+                    0.0f, 0.0f);
 
 //            Log.e("touch",touchOffsetX+"");
             drawCube();
@@ -575,9 +571,8 @@ public class CubeGLRenderer extends ViewToGLRenderer implements View.OnTouchList
 
         fpsCount++;
 
-//        releaseTexImage();
-        if(tt<=500)detachGl();
-        tt++;
+        releaseTexImage();
+        detachGl();
     }
 
     /**

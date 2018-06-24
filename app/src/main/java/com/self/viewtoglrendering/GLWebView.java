@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
 import android.os.Looper;
@@ -101,40 +102,63 @@ public class GLWebView extends WebView implements GLRenderable{
 
     private void draw1(Canvas canvas)
     {
+
+        long timeStart = System.currentTimeMillis();
         //returns canvas attached to gl texture to draw on
-        final Canvas glAttachedCanvas = mViewToGLRenderer.onDrawViewBegin();
+        Canvas glAttachedCanvas;
+        glAttachedCanvas= mViewToGLRenderer.onDrawViewBegin();
         if(glAttachedCanvas != null) {
             //translate canvas to reflect view scrolling
             float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
-            glAttachedCanvas.scale(xScale, xScale);
-            glAttachedCanvas.translate(-getScrollX(), -getScrollY());
+            float yScale = glAttachedCanvas.getHeight()/(float)canvas.getHeight();
+            int scrollX = getScrollX();
+            int scrollY = getScrollY();
+//            xScale = xScale/2;
+//            yScale/=2;
+            glAttachedCanvas.scale(xScale, yScale);
+            int save = canvas.save();
+            glAttachedCanvas.translate(-scrollX, -scrollY);
 
-            //draw the view to provided canvas
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//
-//                    GLWebView.this.superDraw(glAttachedCanvas);
-//                }
-//            }).start();
-
-//            canvas.drawText(System.currentTimeMillis()+"",getScrollX()+500,getScrollY()+500,paint);
-
-            glAttachedCanvas.clipRect(canvas.getClipBounds());
-            glAttachedCanvas.drawColor(Color.WHITE);
+//            glAttachedCanvas.clipRect(scrollX,scrollY,scrollX+getWidth(),scrollY+getHeight());
+//            glAttachedCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
             superDraw(glAttachedCanvas);
+//            glAttachedCanvas.restoreToCount(save);
+//            glAttachedCanvas.translate(-scrollX+canvas.getWidth()/2 , -scrollY);
+//            superDraw(glAttachedCanvas);
             // notify the canvas is updated
             mViewToGLRenderer.onDrawViewEnd();
             if(glSurfaceView!=null) glSurfaceView.requestRender();
 //            super.draw(canvas);
         }
-        else
-        {
-//            superDraw(canvas);
-        }
 //        Log.e("draw","draw");
 //        glSurfaceView.requestRender();
+
+//        glAttachedCanvas = mViewToGLRenderer.onDrawViewBegin();
+//        if(glAttachedCanvas != null) {
+//            //translate canvas to reflect view scrolling
+//            float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
+//            float yScale = glAttachedCanvas.getHeight()/(float)canvas.getHeight();
+//            xScale = xScale/2;
+//            yScale/=2;
+//            glAttachedCanvas.scale(xScale, yScale);
+//            glAttachedCanvas.translate(-getScrollX() + canvas.getWidth() , -getScrollY());
+//
+//            int scrollX = getScrollX();
+//            int scrollY = getScrollY();
+//            glAttachedCanvas.clipRect(scrollX,scrollY,scrollX+getWidth(),scrollY+getHeight());
+////            glAttachedCanvas.clipRect(canvas.getClipBounds());
+//
+//            superDraw(glAttachedCanvas);
+//            // notify the canvas is updated
+//            mViewToGLRenderer.onDrawViewEnd();
+//            if(glSurfaceView!=null) glSurfaceView.requestRender();
+////            super.draw(canvas);
+//        }
+
+
+        long during = System.currentTimeMillis() - timeStart;
+        Log.e("webview draw during",during+"");
     }
 
 

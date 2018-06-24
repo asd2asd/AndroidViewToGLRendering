@@ -1,8 +1,11 @@
 package com.self.viewtoglrendering;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.graphics.Canvas;
@@ -24,10 +27,13 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
     private Surface mSurface;
     private SurfaceTexture.OnFrameAvailableListener onFrameAvailableListener;
     private OnScrollListener onScrollListener;
-    private boolean drawOpenGlTexture;
+    private Paint paint;
+    private static Bitmap bitmap;
 
     public NewGlWebView(Context context) {
         super(context);
+//        paint = new Paint();
+//        if(null==bitmap)bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.test2);
     }
 
     public NewGlWebView(Context context, AttributeSet attrs) {
@@ -44,7 +50,7 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
 
     @Override
-    public boolean updatePreviewSurface(final Surface surface)
+    public boolean updatePreviewSurface(final Surface surface, final CubeSurfaceView.OnViewDrawListener listener)
     {
         BrowserHandler.getInstance().handlerPost(new Runnable() {
             @Override
@@ -52,7 +58,6 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
                 if(surface==null)
                 {
-                    drawOpenGlTexture = false;
 //            if(mSurface!=null)
 //            synchronized (mSurface)
                     {
@@ -61,11 +66,10 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
                 }
                 else
                 {
-                    drawOpenGlTexture = true;
                     if(mSurface!=surface) {
                         mSurface = surface;
 
-                        drawTexture(null);
+                        drawTexture(null,listener);
                     }
                 }
             }
@@ -73,10 +77,6 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
         return true;
     }
 
-    @Override
-    public void drawOpenGlTexture(boolean draw) {
-        drawOpenGlTexture = draw;
-    }
 
 
 //    public void releaseSurface(){
@@ -150,12 +150,13 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
     }
 
-    private void drawTexture(Rect rect)
+    private void drawTexture(Rect rect, CubeSurfaceView.OnViewDrawListener listener)
     {
         Canvas canvas1 = null;
-        if(drawOpenGlTexture&&mSurface!=null)
+        if(mSurface!=null)
         {
-            canvas1 = mSurface.lockHardwareCanvas();
+//            canvas1 = mSurface.lockHardwareCanvas();
+            canvas1 = mSurface.lockCanvas(null);
             originHeight = canvas1.getHeight();
 //            int state = canvas1.save();
 
@@ -163,12 +164,15 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
             canvas1.scale(xScale, xScale);
             canvas1.translate(-getScrollX(), -getScrollY());
             if(null!=rect)canvas1.clipRect(rect);
-            canvas1.drawColor(Color.WHITE);
+//            canvas1.drawColor(Color.WHITE);
+            canvas1.drawColor(0, PorterDuff.Mode.CLEAR);
             super.onDraw(canvas1);
+//            canvas1.drawBitmap(bitmap,0,0,paint);
 //            canvas1.restoreToCount(state);
 //            canvas1.drawText(System.currentTimeMillis()+"",500+getScrollX(),500+getScrollY(),paint);
             mSurface.unlockCanvasAndPost(canvas1);
         }
+        if(null!=listener)listener.onDrawFinished();
     }
 
     public void setOnFrameAvailableListener(SurfaceTexture.OnFrameAvailableListener listener)
@@ -178,7 +182,7 @@ public class NewGlWebView extends WebView implements CubeSurfaceView.DrawTexture
 
     @Override
     public void onPause() {
-        updatePreviewSurface(null);
+        updatePreviewSurface(null,null);
         super.onPause();
     }
 

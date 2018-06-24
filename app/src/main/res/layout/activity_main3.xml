@@ -32,6 +32,13 @@ tools:context="com.self.viewtoglrendering.Main3Activity">
             android:layout_height="match_parent">
         </RelativeLayout>
 
+        <Button
+            android:id="@+id/control_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"/>
+
     </RelativeLayout>
 
     <RelativeLayout

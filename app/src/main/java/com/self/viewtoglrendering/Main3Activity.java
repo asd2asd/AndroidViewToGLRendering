@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 
 public class Main3Activity extends Activity{
@@ -15,6 +16,7 @@ public class Main3Activity extends Activity{
     TextureViewPager textureViewPager;
     RelativeLayout mainContainer;
     RelativeLayout textureViewContainer;
+    Button controlButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,14 @@ public class Main3Activity extends Activity{
 //        glWebView.getSettings().setJavaScriptEnabled(true);
 //        glWebView.loadUrl("https://hao.360.cn");
 
+        controlButton = (Button)findViewById(R.id.control_button);
+        controlButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(textureViewPager.isDraw()) textureViewPager.setDraw(false);
+                else textureViewPager.setDraw(true);
+            }
+        });
 
         textureViewPager = new TextureViewPager(this);
         mainContainer = (RelativeLayout)findViewById(R.id.main3_container);

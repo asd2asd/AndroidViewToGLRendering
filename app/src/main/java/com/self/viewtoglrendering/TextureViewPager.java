@@ -19,6 +19,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     private int zoom;
     private int displayArea;
     private int textureViewCount;
+    private boolean draw;
     /**
      * 当前页面的下标，从0开始
      */
@@ -79,12 +80,20 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
         mDetector = new GestureDetector(getContext(), new GestureListener());
         cubeSurfaceView.setOnTouchListener(this);
-        zoom = 0;
+        zoom = 65;
         displayArea = 10;
 //        currentScrollX = 0;
         animationStrategy = new ScrollAnimaitonStrategy(0,0);
+        draw = false;
     }
 
+    public boolean isDraw() {
+        return draw;
+    }
+
+    public void setDraw(boolean draw) {
+        this.draw = draw;
+    }
 
     @Override
     public void OnSurfaceAvaiable() {
@@ -105,7 +114,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
     {
         for(int i=0;i<adapter.getCount();i++)
         {
-            ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).updatePreviewSurface(null);
+            ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).updatePreviewSurface(null,null);
         }
         cubeSurfaceView.pause();
     }
@@ -177,6 +186,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     private void applyScrollX()
     {
+        if(!draw) return;
         int itemWidth = getItemWidth();
         int currentScrollX = getScrollXCorrect();
         int firstVisibleItemIndex = getFirstVisibleItemIndex();
@@ -187,24 +197,32 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
         int textureViewStartIndex = firstVisibleItemIndex%textureViewCount;
 
 
-        for(int i=0;i<adapter.getCount();i++)
-        {
-
-                ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).updatePreviewSurface(null);
-        }
+//        for(int i=0;i<adapter.getCount();i++)
+//        {
+//
+//                ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).updatePreviewSurface(null);
+//        }
 
         for(int i=0,j=firstVisibleItemIndex,textureIndex = textureViewStartIndex;i<textureViewCount;i++,j++) {
             if (textureIndex >= textureViewCount) textureIndex = 0;
             if (j <= lastVisibleItemIndex) {
-//                int oldDrawViewIndex = cubeSurfaceView.getDrawViewIndex(textureIndex);
-//                if(oldDrawViewIndex!=j)
+                int oldDrawViewIndex = cubeSurfaceView.getDrawViewIndex(textureIndex);
+                if(oldDrawViewIndex!=j)
                 {
-//                    if(oldDrawViewIndex>=0)
-//                        ((CubeSurfaceView.DrawTextureView) adapter.instantiateItem(this, oldDrawViewIndex)).
-//                                updatePreviewSurface(null);
+                    final int finalTexIndex = textureIndex;
+                    if(oldDrawViewIndex>=0)
+                        ((CubeSurfaceView.DrawTextureView) adapter.instantiateItem(this, oldDrawViewIndex)).
+                                updatePreviewSurface(null,null);
+                    cubeSurfaceView.releaseTexture(finalTexIndex);
                     ((CubeSurfaceView.DrawTextureView) adapter.instantiateItem(this, j)).
-                            updatePreviewSurface(cubeSurfaceView.getRectSurface(textureIndex));
-                    cubeSurfaceView.updateDrawViewIndex(textureIndex,j);
+                            updatePreviewSurface(cubeSurfaceView.getRectSurface(finalTexIndex), new CubeSurfaceView.OnViewDrawListener() {
+                                @Override
+                                public void onDrawFinished() {
+                                    cubeSurfaceView.updateTexture(finalTexIndex);
+                                }
+                            });
+                    cubeSurfaceView.updateDrawViewIndex(finalTexIndex,j);
+//                    cubeSurfaceView.setRectTextureUpdate(textureIndex);
 
                 }
                 cubeSurfaceView.setRectEnable(textureIndex, true);
@@ -226,6 +244,11 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 ////                ((NewGlWebView)adapter.instantiateItem(this,i)).releaseSurface();
 //                ((CubeSurfaceView.DrawTextureView)adapter.instantiateItem(this,i)).drawOpenGlTexture(false);
 //        }
+    }
+
+    private void onItemChanged(int position)
+    {
+
     }
 
     public int getScrollXCorrect()

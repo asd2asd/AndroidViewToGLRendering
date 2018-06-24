@@ -328,7 +328,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
             if(null!=rectBean.getSurfaceTexture()) return rectBean.getSurfaceTexture();
             int textureId = mTexProgram.createTextureObject();
-            SurfaceTexture cameraTexture = new SurfaceTexture(textureId);
+            SurfaceTexture cameraTexture = new SurfaceTexture(textureId,true);
             cameraTexture.setDefaultBufferSize(mWindowSurface.getWidth()/2,mWindowSurface.getHeight()/2);
             rectBean.getRect().setTexture(textureId);
             rectBean.setSurfaceTexture(cameraTexture);
@@ -515,31 +515,55 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
         }
 
+        private void updateTexture(int rectIndex)
+        {
+            RectBean rectBean = mRectList.get(rectIndex);
+            if(rectBean.isDrawed()) return;
+            mRectList.get(rectIndex).getSurfaceTexture().updateTexImage();
+            rectBean.setDrawed(true);
+        }
+
+        private void releaseTexture(int rectIndex)
+        {
+            RectBean rectBean = mRectList.get(rectIndex);
+            if(!rectBean.isDrawed()) return;
+            rectBean.getSurfaceTexture().releaseTexImage();
+            rectBean.setDrawed(false);
+        }
+
         /**
          * Handles incoming frame of data from the camera.
          */
         private void frameAvailable() {
 
-            long startTime = System.currentTimeMillis();
-            for(int i=0;i<mRectList.size();i++)
-            {
-                if(!mRectList.get(i).isEnable())
-                    continue;
-                SurfaceTexture surfaceTexture = mRectList.get(i).getSurfaceTexture();
-                if (null == surfaceTexture)
-                    return;
-                surfaceTexture.updateTexImage();
-            }
-
-//            long startTime = System.currentTimeMillis();
-
             surfaceEventListener.BeforeDrawFrame();
+            long startTime = System.currentTimeMillis();
+//            for(int i=0;i<mRectList.size();i++)
+//            {
+//                if(!mRectList.get(i).isEnable())
+//                    continue;
+//                SurfaceTexture surfaceTexture = mRectList.get(i).getSurfaceTexture();
+//                if (null == surfaceTexture)
+//                    return;
+//                if(mRectList.get(i).isUpdate())surfaceTexture.updateTexImage();
+//            }
+
+
             draw();
-//            long endTime = System.currentTimeMillis() - startTime;
-//            Log.e("during ",endTime+"");
 
-//            fpsCount++;
-
+//            for(int i=0;i<mRectList.size();i++)
+//            {
+//                if(!mRectList.get(i).isEnable())
+//                    continue;
+//                SurfaceTexture surfaceTexture = mRectList.get(i).getSurfaceTexture();
+//                if (null == surfaceTexture)
+//                    return;
+//                if(mRectList.get(i).isUpdate())
+//                {
+////                    surfaceTexture.releaseTexImage();
+//                    mRectList.get(i).setUpdate(false);
+//                }
+//            }
 
             int during = (int) (System.currentTimeMillis() - startTime);
 
@@ -647,6 +671,8 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         private static final int MSG_ROTATE_VALUE = 7;
         private static final int MSG_POSITION = 8;
         private static final int MSG_REDRAW = 9;
+        private static final int MSG_UPDATE_TEXTURE = 10;
+        private static final int MSG_RELEASE_TEXTURE = 11;
 
         // This shouldn't need to be a weak ref, since we'll go away when the Looper quits,
         // but no real harm in it.
@@ -763,6 +789,16 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             sendMessage(obtainMessage(MSG_REDRAW));
         }
 
+        public void sendUpdateTexture(int rectIndex)
+        {
+            sendMessage(obtainMessage(MSG_UPDATE_TEXTURE,rectIndex,0));
+        }
+
+        public void sendReleaseTexture(int rectIndex)
+        {
+            sendMessage(obtainMessage(MSG_RELEASE_TEXTURE,rectIndex,0));
+        }
+
         @Override  // runs on RenderThread
         public void handleMessage(Message msg) {
             int what = msg.what;
@@ -804,6 +840,12 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                     break;
                 case MSG_REDRAW:
                     renderThread.draw();
+                    break;
+                case MSG_UPDATE_TEXTURE:
+                    renderThread.updateTexture(msg.arg1);
+                    break;
+                case MSG_RELEASE_TEXTURE:
+                    renderThread.releaseTexture(msg.arg1);
                     break;
                 default:
                     throw new RuntimeException("unknown message " + what);
@@ -847,8 +889,12 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     public interface DrawTextureView
     {
-        boolean updatePreviewSurface(final Surface surface);
-        void drawOpenGlTexture(boolean draw);
+        boolean updatePreviewSurface(final Surface surface,OnViewDrawListener listener);
+    }
+
+    public interface OnViewDrawListener
+    {
+        void onDrawFinished();
     }
 
     public void addRect()
@@ -879,5 +925,16 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     public int getDrawViewIndex(int rectIndex)
     {
         return mRenderThread.getRectList().get(rectIndex).getDrawViewIndex();
+    }
+
+
+    public void updateTexture(int rectIndex)
+    {
+        mRenderThread.getHandler().sendUpdateTexture(rectIndex);
+    }
+
+    public void releaseTexture(int rectIndex)
+    {
+        mRenderThread.getHandler().sendReleaseTexture(rectIndex);
     }
 }

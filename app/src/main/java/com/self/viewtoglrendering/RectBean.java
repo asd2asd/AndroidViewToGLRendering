@@ -29,6 +29,7 @@ public class RectBean {
     private float posX, posY;
     private boolean enable;
     private int drawViewIndex;
+    private boolean drawed;
 
     public RectBean()
     {
@@ -145,5 +146,13 @@ public class RectBean {
 
     private void setSurface(Surface surface) {
         this.surface = surface;
+    }
+
+    public boolean isDrawed() {
+        return drawed;
+    }
+
+    public void setDrawed(boolean drawed) {
+        this.drawed = drawed;
     }
 }
