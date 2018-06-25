@@ -31,35 +31,27 @@ public class Main3Activity extends Activity{
 //        glWebView.getSettings().setJavaScriptEnabled(true);
 //        glWebView.loadUrl("https://hao.360.cn");
 
-        controlButton = (Button)findViewById(R.id.control_button);
-        controlButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(textureViewPager.isDraw()) textureViewPager.setDraw(false);
-                else textureViewPager.setDraw(true);
-            }
-        });
 
         textureViewPager = new TextureViewPager(this);
         mainContainer = (RelativeLayout)findViewById(R.id.main3_container);
         textureViewContainer = (RelativeLayout)findViewById(R.id.textview_container);
         textureViewContainer.addView(textureViewPager);
 
-        NewGlWebView glWebView = new NewGlWebView(this);
+        final NewGlWebView glWebView = new NewGlWebView(this);
         webviewInit(glWebView);
-        NewGlWebView glWebView2 = new NewGlWebView(this);
+        final NewGlWebView glWebView2 = new NewGlWebView(this);
         webviewInit(glWebView2);
-        NewGlWebView glWebView3 = new NewGlWebView(this);
+        final NewGlWebView glWebView3 = new NewGlWebView(this);
         webviewInit(glWebView3);
-        NewGlWebView glWebView4 = new NewGlWebView(this);
+        final NewGlWebView glWebView4 = new NewGlWebView(this);
         webviewInit(glWebView4);
-        NewGlWebView glWebView5 = new NewGlWebView(this);
+        final NewGlWebView glWebView5 = new NewGlWebView(this);
         webviewInit(glWebView5);
-        NewGlWebView glWebView6 = new NewGlWebView(this);
+        final NewGlWebView glWebView6 = new NewGlWebView(this);
         webviewInit(glWebView6);
-        NewGlWebView glWebView7 = new NewGlWebView(this);
+        final NewGlWebView glWebView7 = new NewGlWebView(this);
         webviewInit(glWebView7);
-        NewGlWebView glWebView8 = new NewGlWebView(this);
+        final NewGlWebView glWebView8 = new NewGlWebView(this);
         webviewInit(glWebView8);
 
 
@@ -94,6 +86,26 @@ public class Main3Activity extends Activity{
 
         textureViewPager.setAdapter(adapter);
 
+
+
+        controlButton = (Button)findViewById(R.id.control_button);
+        controlButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(textureViewPager.isDraw()) textureViewPager.setDraw(false);
+                else textureViewPager.setDraw(true);
+
+                glWebView.onPause();
+                glWebView2.onPause();
+                glWebView3.onPause();
+                glWebView4.onPause();
+                glWebView5.onPause();
+                glWebView6.onPause();
+                glWebView7.onPause();
+                glWebView8.onPause();
+                mainContainer.removeAllViews();
+            }
+        });
     }
 
     private void webviewInit(NewGlWebView webView)
