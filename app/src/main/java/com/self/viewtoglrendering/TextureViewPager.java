@@ -248,7 +248,11 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     private void onItemChanged(int position)
     {
-
+        for(int i=0;i<cubeSurfaceView.getRectCount();i++)
+        {
+            if(cubeSurfaceView.getDrawViewIndex(i)==position)
+                ;
+        }
     }
 
     public int getScrollXCorrect()
