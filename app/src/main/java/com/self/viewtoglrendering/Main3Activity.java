@@ -55,7 +55,6 @@ public class Main3Activity extends Activity{
         webviewInit(glWebView8);
 
 
-        mainContainer.addView(glWebView);
         mainContainer.addView(glWebView2);
         mainContainer.addView(glWebView3);
         mainContainer.addView(glWebView4);
@@ -63,6 +62,7 @@ public class Main3Activity extends Activity{
         mainContainer.addView(glWebView6);
         mainContainer.addView(glWebView7);
         mainContainer.addView(glWebView8);
+        mainContainer.addView(glWebView);
 
         glWebView.loadUrl("https://m.hupu.com");
         glWebView2.loadUrl("https://hao.360.cn");
@@ -103,7 +103,7 @@ public class Main3Activity extends Activity{
                 glWebView6.onPause();
                 glWebView7.onPause();
                 glWebView8.onPause();
-                mainContainer.removeAllViews();
+//                mainContainer.removeAllViews();
             }
         });
     }

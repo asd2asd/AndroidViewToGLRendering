@@ -80,8 +80,8 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
         mDetector = new GestureDetector(getContext(), new GestureListener());
         cubeSurfaceView.setOnTouchListener(this);
-        zoom = 65;
-        displayArea = 10;
+        zoom = 0;
+        displayArea = 0;
 //        currentScrollX = 0;
         animationStrategy = new ScrollAnimaitonStrategy(0,0);
         draw = false;
@@ -93,6 +93,7 @@ public class TextureViewPager extends LinearLayout implements View.OnTouchListen
 
     public void setDraw(boolean draw) {
         this.draw = draw;
+        if(draw) applyScrollX();
     }
 
     @Override

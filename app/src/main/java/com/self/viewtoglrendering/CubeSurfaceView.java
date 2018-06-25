@@ -588,7 +588,7 @@ public class CubeSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 //            Log.e("opengl","draw");
             for(int i=0;i<mRectList.size();i++) {
                 RectBean rectBean = mRectList.get(i);
-                if(rectBean.isEnable())
+                if(rectBean.isEnable()&&rectBean.isDrawed())
                     rectBean.getRect().draw(mTexProgram, mDisplayProjectionMatrix);
             }
             mWindowSurface.swapBuffers();
